@@ -5,21 +5,60 @@ import { Button } from "./components/ui/button";
 import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./components/ui/form";
 import { Input } from "./components/ui/input";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { useState } from "react";
 
 const logInFormSchema = z.object({
-  email: z.email(),
-  password: z.string(),
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 export function LogIn() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
   const form = useForm<z.infer<typeof logInFormSchema>>({
     resolver: zodResolver(logInFormSchema),
   });
 
-  function onSubmit(values: z.infer<typeof logInFormSchema>) {
-    console.log("IMPLEMENT CALL TO BACKEND LOGIN ENDPOINT");
-    console.log("Login Payload", values);
+  async function onSubmit(values: z.infer<typeof logInFormSchema>) {
+    setIsLoading(true);
+    setError(null);
+    
+    try {
+      // Create form data as expected by OAuth2PasswordRequestForm
+      const formData = new FormData();
+      formData.append('username', values.email); 
+      formData.append('password', values.password);
+      
+      const response = await fetch('http://127.0.0.1:8000/auth/token', {
+        method: 'POST',
+        body: formData, 
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Invalid email or password');
+      }
+
+      const data = await response.json();
+      console.log('Login successful:', data);
+      
+      // Store authentication token if provided
+      if (data.token) {
+        localStorage.setItem('authToken', data.token.access_token);
+        localStorage.setItem('refreshToken', data.token.refresh_token);
+      }
+      
+      // Redirect to dashboard
+      navigate('/dashboard');
+      
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Something went wrong');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -37,6 +76,11 @@ export function LogIn() {
           </CardAction>
         </CardHeader>
         <CardContent>
+          {error && (
+            <div className="text-red-500 text-sm mb-4 p-2 bg-red-50 rounded">
+              {error}
+            </div>
+          )}
           <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
               <FormField
@@ -64,7 +108,9 @@ export function LogIn() {
                   </FormItem>
                 )}
               />
-              <Button type="submit">Log in</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? "Logging in..." : "Log in"}
+              </Button>
             </form>
           </Form>
         </CardContent>
