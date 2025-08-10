@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "./components/
 import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
+import { useAuth } from "./contexts/AuthContext";
 
 
 const signUpFormSchema = z.object({
@@ -19,44 +20,23 @@ const signUpFormSchema = z.object({
 });
 
 export function SignUp() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { register, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  
+
   const form = useForm<z.infer<typeof signUpFormSchema>>({
     resolver: zodResolver(signUpFormSchema),
   });
 
   async function onSubmit(values: z.infer<typeof signUpFormSchema>) {
-    setIsLoading(true);
     setError(null);
-    
+
     try {
-      const response = await fetch('http://127.0.0.1:8000/users/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: values.email,
-          password: values.password,
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || 'Failed to create account');
-      }
-
-      const data = await response.json();
-      console.log('Account created successfully:', data);
+      await register(values.email, values.password, values.passwordConfirmation);
 
       navigate('/dashboard');
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setIsLoading(false);
     }
   };
 
