@@ -1,6 +1,7 @@
 import { authApi } from "@/api/auth";
 import { type AuthContextType, type User } from "@/types/auth";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
+import { useLocation } from "react-router";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -11,6 +12,7 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const location = useLocation();
 
   const isAuthenticated = !!user;
 
@@ -19,20 +21,50 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setIsLoading(true);
 
       try {
-        const token = localStorage.getItem("access_token");
-        if (token) {
-          // token validation with backend
+        // TODO: Store token as cookies
+        const token = localStorage.getItem("authToken");
+
+        if (!token) {
+          console.log("TOKEN NOT FOUND/LOGGED OUT");
+          setUser(null);
+
+          return;
         }
+
+        // token validation with backend
+        console.log("Validating token..");
+        try {
+          await authApi.validateToken(token);
+        } catch (err) {
+          console.log("Invalid token, refreshing...");
+
+          // Refresh token
+          const refresh_token = localStorage.getItem("refreshToken");
+          if (!refresh_token) { throw new Error("Refresh token not found") };
+
+          const body = { token: refresh_token };
+          const refresh_res = await authApi.refreshToken(body);
+
+          localStorage.setItem("authToken", refresh_res.token.access_token);
+          localStorage.setItem("refreshToken", refresh_res.token.refresh_token);
+
+          console.log("Refresh token res:", refresh_res);
+          console.log("Successfully refreshed token");
+          return;
+        }
+
+        console.log("Authenticated!");
       } catch (error) {
         console.error("Auth check error:", error);
-        localStorage.removeItem("access_token");
+        localStorage.removeItem("authToken");
+        setUser(null);
       } finally {
         setIsLoading(false);
       }
     };
 
     checkAuthStatus();
-  }, []);
+  }, [location.pathname]);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
@@ -48,13 +80,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log("Login successful:", authRes);
 
       // TODO: Backend must return a token.
-      // if (!data.token) {
-      //   throw new Error("Token not issued");
-      // }
-      //
-      // // Store authentication token
-      // localStorage.setItem("authToken", data.token.access_token);
-      // localStorage.setItem("refreshToken", data.token.refresh_token);
+      if (!authRes.token.access_token || !authRes.token.refresh_token) {
+        throw new Error("Token not issued");
+      }
+
+      // Store authentication token
+      localStorage.setItem("authToken", authRes.token.access_token);
+      localStorage.setItem("refreshToken", authRes.token.refresh_token);
 
       setUser(authRes.user);
     } catch (error) {
@@ -78,14 +110,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
       console.log("Login successful:", authRes);
 
-      // TODO: Backend response requires auth token.
-      // if (!userData.token) {
-      //   throw new Error("Token not issued");
-      // }
-      //
-      // // Store authentication token
-      // localStorage.setItem("authToken", userData.token.access_token);
-      // localStorage.setItem("refreshToken", userData.token.refresh_token);
+      if (!authRes.token.access_token || !authRes.token.refresh_token) {
+        throw new Error("Token not issued");
+      }
+
+      // Store authentication token
+      localStorage.setItem("authToken", authRes.token.access_token);
+      localStorage.setItem("refreshToken", authRes.token.refresh_token);
 
       setUser(authRes.user);
     } catch (error) {

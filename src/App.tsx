@@ -12,8 +12,8 @@ import { AuthProvider } from "./contexts/AuthContext";
 function App() {
 
   return (
-    <AuthProvider>
-      <BrowserRouter>
+    <BrowserRouter>
+      <AuthProvider>
         <Routes>
           {/* Public Routes - TODO: Redirect to dashboard if already logged in */}
           <Route path="/login" element={<LogIn />} />
@@ -35,8 +35,8 @@ function App() {
             <Route path="/settings" element={<Settings />} />
           </Route>
         </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+      </AuthProvider>
+    </BrowserRouter>
   )
 }
 

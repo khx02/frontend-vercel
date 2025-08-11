@@ -36,3 +36,11 @@ export interface LoginPayload {
   email: string;
   password: string;
 }
+
+export interface ValidateTokenRes {
+  is_valid: boolean;
+}
+
+export interface RefreshTokenPayload {
+  token: string;
+}
