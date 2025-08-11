@@ -1,7 +1,6 @@
 import { Calendar, Home, LogOut, Settings, Wrench } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { useNavigate } from "react-router";
-import { Button } from "../ui/button";
 import { useAuth } from "@/contexts/AuthContext";
 
 const items = [
@@ -49,7 +48,16 @@ export function AppSidebar() {
               {items.map(item => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a onClick={() => void navigate(item.url)}>
+                    <a 
+                      onClick={() => void navigate(item.url)}
+                      tabIndex={0}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(item.url);
+                        }
+                      }}
+                    >
                       <item.icon />
                       <span>{item.title}</span>
                     </a>
@@ -68,19 +76,25 @@ export function AppSidebar() {
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <Button 
-                    variant="ghost" 
-                    className="w-full justify-start" 
+                  <a 
                     onClick={handleLogout}
+                    tabIndex={0}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        handleLogout();
+                      }
+                    }}
                   >
-                    <LogOut className="mr-2 h-4 w-4" />
+                    <LogOut />
                     <span>Logout</span>
-                  </Button>
+                  </a>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
       </SidebarContent>
     </Sidebar>
   );
