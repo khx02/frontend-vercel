@@ -7,6 +7,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel } from "./components/
 import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
+import { useAuth } from "./contexts/AuthContext";
 
 const logInFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -14,50 +15,24 @@ const logInFormSchema = z.object({
 });
 
 export function LogIn() {
-  const [isLoading, setIsLoading] = useState(false);
+  const { login, isLoading } = useAuth();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  
+
   const form = useForm<z.infer<typeof logInFormSchema>>({
     resolver: zodResolver(logInFormSchema),
   });
 
   async function onSubmit(values: z.infer<typeof logInFormSchema>) {
-    setIsLoading(true);
     setError(null);
-    
+
     try {
-      // Create form data as expected by OAuth2PasswordRequestForm
-      const formData = new FormData();
-      formData.append('username', values.email); 
-      formData.append('password', values.password);
-      
-      const response = await fetch('http://127.0.0.1:8000/auth/token', {
-        method: 'POST',
-        body: formData, 
-      });
+      await login(values.email, values.password);
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.detail || 'Invalid email or password');
-      }
-
-      const data = await response.json();
-      console.log('Login successful:', data);
-      
-      // Store authentication token if provided
-      if (data.token) {
-        localStorage.setItem('authToken', data.token.access_token);
-        localStorage.setItem('refreshToken', data.token.refresh_token);
-      }
-      
       // Redirect to dashboard
       navigate('/dashboard');
-      
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
-    } finally {
-      setIsLoading(false);
     }
   };
 
