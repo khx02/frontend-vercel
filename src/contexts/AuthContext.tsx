@@ -43,9 +43,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       formData.append('username', email);
       formData.append('password', password);
 
-      const userData = await authApi.login(formData);
+      const authRes = await authApi.login(formData);
 
-      console.log("Login successful:", userData);
+      console.log("Login successful:", authRes);
 
       // TODO: Backend must return a token.
       // if (!data.token) {
@@ -56,7 +56,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // localStorage.setItem("authToken", data.token.access_token);
       // localStorage.setItem("refreshToken", data.token.refresh_token);
 
-      setUser(userData);
+      setUser(authRes.user);
     } catch (error) {
       console.log("Login error:", error);
       throw error;
@@ -74,9 +74,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         password: password,
       }
 
-      const userData = await authApi.register(payload);
+      const authRes = await authApi.register(payload);
 
-      console.log("Login successful:", userData);
+      console.log("Login successful:", authRes);
 
       // TODO: Backend response requires auth token.
       // if (!userData.token) {
@@ -87,7 +87,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // localStorage.setItem("authToken", userData.token.access_token);
       // localStorage.setItem("refreshToken", userData.token.refresh_token);
 
-      setUser(userData);
+      setUser(authRes.user);
     } catch (error) {
       console.log("Register error:", error);
       throw error;

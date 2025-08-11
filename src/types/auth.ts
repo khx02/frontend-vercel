@@ -14,10 +14,17 @@ export interface AuthContextType {
   register: (email: string, password: string, passwordConfirm: string) => Promise<void>;
 }
 
-export interface AuthResponse {
-  user: User | null;
+export interface TokenPayload {
   access_token: string;
   refresh_token: string;
+  access_expires_at: number;
+  refresh_expires_at: number;
+  token_type: string;
+}
+
+export interface AuthResponse {
+  user: User | null;
+  token: TokenPayload;
 }
 
 export interface RegisterPayload {
