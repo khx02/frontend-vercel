@@ -2,25 +2,33 @@ import type { AuthResponse, RefreshTokenPayload, RegisterPayload, ValidateTokenR
 import { apiClient } from "./client"
 
 export const authApi = {
-  register: (data: RegisterPayload): Promise<AuthResponse> =>
-    apiClient.post('/users/register', data, {}, true),
+  register: async (data: RegisterPayload): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/users/register', data);
+    return response.data;
+  },
 
-  login: (data: FormData): Promise<AuthResponse> =>
-    apiClient.post('/auth/token', data, {}, false),
+  login: async (data: FormData): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/token', data);
+    return response.data;
+  },
 
-  logout: (): Promise<Response> =>
-    apiClient.post('/auth/logout'),
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout');
+  },
 
-  validateToken: (token: string): Promise<ValidateTokenRes> => {
+  validateToken: async (token: string): Promise<ValidateTokenRes> => {
     const options = {
       headers: {
         'Authorization': `Bearer ${token}`,
       },
     };
 
-    return apiClient.post('/auth/validate_token', undefined, options, true);
+    const response = await apiClient.post<ValidateTokenRes>('/auth/validate_token', undefined, options);
+    return response.data;
   },
 
-  refreshToken: (data: RefreshTokenPayload): Promise<AuthResponse> =>
-    apiClient.post('/auth/refresh_token', data, {}, true),
+  refreshToken: async (data: RefreshTokenPayload): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/refresh_token', data);
+    return response.data;
+  },
 };

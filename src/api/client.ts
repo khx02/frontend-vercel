@@ -1,67 +1,39 @@
-const API_BASE_URL = "http://localhost:8000"
+import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
+
+const API_BASE_URL = "http://localhost:8000";
 
 class ApiClient {
-  private baseUrl: string;
+  private axiosInstance: AxiosInstance;
 
   constructor(baseUrl: string) {
-    this.baseUrl = baseUrl;
-  }
-
-  private async request<T>(endpoint: string, options: RequestInit = {}): Promise<T> {
-    const url = `${this.baseUrl}${endpoint}`;
-
-    const config: RequestInit = {
-      headers: {
-        ...options.headers,
-      },
-      ...options,
-    };
-
-    try {
-      const response = await fetch(url, config);
-
-      if (!response.ok) {
-        const errMsg = await response.text();
-        throw new Error(errMsg);
-      }
-
-      return response.json();
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async get<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "GET" });
-  };
-
-  async post<T>(endpoint: string, data?: any, options: RequestInit = {}, stringify: boolean = true): Promise<T> {
-    const headers = new Headers(options.headers);
-
-    if (stringify && data) {
-      headers.set('Content-Type', 'application/json');
-    }
-
-    return this.request<T>(endpoint, {
-      method: "POST",
-      headers,
-      body: data ?
-        stringify ? JSON.stringify(data) : data
-        : undefined,
-      ...options,
+    this.axiosInstance = axios.create({
+      baseURL: baseUrl,
+      withCredentials: true,
     });
+
+    // 401 / refresh here
+    this.axiosInstance.interceptors.response.use(
+      (res) => res,
+      (error) => Promise.reject(error)
+    );
   }
 
-  async put<T>(endpoint: string, data?: any): Promise<T> {
-    return this.request<T>(endpoint, {
-      method: "PUT",
-      body: data ? JSON.stringify(data) : undefined,
-    });
-  };
+  private async request<T = unknown>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+    return this.axiosInstance.request<T>(config);
+  }
 
-  async delete<T>(endpoint: string): Promise<T> {
-    return this.request<T>(endpoint, { method: "DELETE" });
-  };
-};
+  get<T = unknown>(endpoint: string, config?: AxiosRequestConfig) {
+    return this.request<T>({ url: endpoint, method: "GET", ...config });
+  }
+  post<T = unknown>(endpoint: string, data?: any, config?: AxiosRequestConfig) {
+    return this.request<T>({ url: endpoint, method: "POST", data, ...config });
+  }
+  put<T = unknown>(endpoint: string, data?: any, config?: AxiosRequestConfig) {
+    return this.request<T>({ url: endpoint, method: "PUT", data, ...config });
+  }
+  delete<T = unknown>(endpoint: string, config?: AxiosRequestConfig) {
+    return this.request<T>({ url: endpoint, method: "DELETE", ...config });
+  }
+}
 
 export const apiClient = new ApiClient(API_BASE_URL);

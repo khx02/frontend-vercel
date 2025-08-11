@@ -1,6 +1,10 @@
 import { Calendar, Home, Settings, Wrench } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { useNavigate } from "react-router";
+import { Button } from "../ui/button";
+import axios from "axios";
+import { API_DOMAIN } from "@/types/api";
+import { apiClient } from "@/api/client";
 
 const items = [
   {
