@@ -1,10 +1,8 @@
-import { Calendar, Home, Settings, Wrench } from "lucide-react";
+import { Calendar, Home, LogOut, Settings, Wrench } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { useNavigate } from "react-router";
 import { Button } from "../ui/button";
-import axios from "axios";
-import { API_DOMAIN } from "@/types/api";
-import { apiClient } from "@/api/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 const items = [
   {
@@ -31,10 +29,19 @@ const items = [
 
 export function AppSidebar() {
   const navigate = useNavigate();
+  const { logout } = useAuth();
+
+  const handleLogout = async () => {
+    try {
+      logout();
+    } catch (error) {
+      console.error("Logout failed:", error);
+    }
+  };
 
   return (
     <Sidebar collapsible="icon">
-      <SidebarContent>
+      <SidebarContent className="flex flex-col">
         <SidebarGroup>
           <SidebarGroupLabel>Task Management</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -49,6 +56,28 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               ))}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+        
+        {/* Spacer to push logout button to bottom */}
+        <div className="flex-1" />
+        
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <Button 
+                    variant="ghost" 
+                    className="w-full justify-start" 
+                    onClick={handleLogout}
+                  >
+                    <LogOut className="mr-2 h-4 w-4" />
+                    <span>Logout</span>
+                  </Button>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
