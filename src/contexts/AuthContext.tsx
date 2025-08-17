@@ -1,8 +1,7 @@
-// src/contexts/AuthContext.tsx
 import { apiClient } from "@/api/client";
 import { type AuthContextType, type User } from "@/types/auth";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useLocation, useNavigate } from "react-router";
+import { useNavigate } from "react-router";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -13,7 +12,6 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const location = useLocation();
   const navigate = useNavigate();
 
   const isAuthenticated = !!user;
@@ -22,10 +20,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchMe = async () => {
     try {
       const { data } = await apiClient.get<User>("/auth/me");
-      setUser(data);
-
-      console.log(user);
-      
+      setUser(data);      
     } catch {
       setUser(null);
     }
@@ -44,19 +39,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     return () => {
       isMounted = false;
     };
-    // re-check when the route changes (optional but handy)
-  }, [location.pathname]);
+    // Initial load only - token refresh is handled by useTokenRefresh hook
+  }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
     try {
-      // If your backend expects a form (OAuth2PasswordRequestForm), keep FormData:
       const form = new FormData();
       form.append("username", email);
       form.append("password", password);
 
       // Server should set http-only cookies (access/refresh) via Set-Cookie
-      await apiClient.post("/auth/token", form);
+      await apiClient.post("/auth/set-token", form);
       await fetchMe();
       
     } catch (error) {
@@ -70,7 +64,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, _passwordConfirmation: string): Promise<void> => {
     setIsLoading(true);
     try {
-      await apiClient.post("/auth/register", { email, password });
+      await apiClient.post("/users/register", { email, password });
+      await login(email, password);
       await fetchMe();
 
     } catch (error) {

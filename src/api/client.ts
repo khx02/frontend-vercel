@@ -1,9 +1,19 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse } from "axios";
+import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type AxiosError, type InternalAxiosRequestConfig } from "axios";
+
+// Extend the Axios request config to include our custom _retry property
+interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 const API_BASE_URL = "http://localhost:8000";
 
 class ApiClient {
   private axiosInstance: AxiosInstance;
+  private isRefreshing = false;
+  private failedQueue: Array<{
+    resolve: (value?: any) => void;
+    reject: (error?: any) => void;
+  }> = [];
 
   constructor(baseUrl: string) {
     this.axiosInstance = axios.create({
@@ -11,11 +21,86 @@ class ApiClient {
       withCredentials: true,
     });
 
-    // 401 / refresh here
+    this.setupInterceptors();
+  }
+
+  private setupInterceptors() {
+    // Response interceptor to handle token refresh on 401
     this.axiosInstance.interceptors.response.use(
-      (res) => res,
-      (error) => Promise.reject(error)
+      (response) => response,
+      async (error: AxiosError) => {
+        const originalRequest = error.config as ExtendedAxiosRequestConfig;
+
+        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+          // Don't try to refresh on /auth/me requests to avoid infinite loops
+          if (originalRequest.url?.includes('/auth/me')) {
+            return Promise.reject(error);
+          }
+
+          if (this.isRefreshing) {
+            // If already refreshing, queue the request
+            return new Promise((resolve, reject) => {
+              this.failedQueue.push({ resolve, reject });
+            }).then(() => {
+              return this.axiosInstance(originalRequest);
+            }).catch(err => {
+              return Promise.reject(err);
+            });
+          }
+
+          originalRequest._retry = true;
+          this.isRefreshing = true;
+
+          try {
+            await this.refreshToken();
+            this.processQueue(null);
+            return this.axiosInstance(originalRequest);
+          } catch (refreshError) {
+            this.processQueue(refreshError);
+            // Redirect to login or handle auth failure
+            window.location.href = '/login';
+            return Promise.reject(refreshError);
+          } finally {
+            this.isRefreshing = false;
+          }
+        }
+
+        return Promise.reject(error);
+      }
     );
+  }
+
+  private processQueue(error: any) {
+    this.failedQueue.forEach(({ resolve, reject }) => {
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    });
+    
+    this.failedQueue = [];
+  }
+
+  private async refreshToken(): Promise<void> {
+    try {
+      // Call your refresh endpoint - using the correct endpoint
+      await this.axiosInstance.post('/auth/refresh_token');
+    } catch (error) {
+      // If refresh fails, clear any stored auth state
+      throw error;
+    }
+  }
+
+  // Method to manually refresh token (for route changes)
+  public async refreshTokenOnRouteChange(): Promise<boolean> {
+    try {
+      await this.refreshToken();
+      return true;
+    } catch (error) {
+      console.error('Token refresh failed on route change:', error);
+      return false;
+    }
   }
 
   private async request<T = unknown>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {

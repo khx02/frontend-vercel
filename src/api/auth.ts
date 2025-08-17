@@ -1,4 +1,4 @@
-import type { AuthResponse, RefreshTokenPayload, RegisterPayload, ValidateTokenRes } from "@/types/auth";
+import type { AuthResponse, RefreshTokenPayload, RegisterPayload } from "@/types/auth";
 import { apiClient } from "./client"
 
 export const authApi = {
@@ -16,19 +16,14 @@ export const authApi = {
     await apiClient.post('/auth/logout');
   },
 
-  validateToken: async (token: string): Promise<ValidateTokenRes> => {
-    const options = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
-
-    const response = await apiClient.post<ValidateTokenRes>('/auth/validate_token', undefined, options);
-    return response.data;
-  },
 
   refreshToken: async (data: RefreshTokenPayload): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>('/auth/refresh_token', data);
     return response.data;
+  },
+
+  // Simple refresh endpoint for interceptor (cookie-based)
+  refresh: async (): Promise<void> => {
+    await apiClient.post('/auth/refresh_token');
   },
 };
