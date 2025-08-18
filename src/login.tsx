@@ -9,6 +9,8 @@ import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
 
+
+
 const logInFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(1, "Password is required"),

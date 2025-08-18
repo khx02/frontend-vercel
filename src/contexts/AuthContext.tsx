@@ -1,7 +1,7 @@
-import { authApi } from "@/api/auth";
+import { apiClient } from "@/api/client";
 import { type AuthContextType, type User } from "@/types/auth";
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
-import { useLocation } from "react-router";
+import { useNavigate } from "react-router";
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
@@ -12,115 +12,64 @@ interface AuthProviderProps {
 export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const location = useLocation();
+  const navigate = useNavigate();
 
   const isAuthenticated = !!user;
 
+  // Ask backend who the user is (cookie-based session)
+  const fetchMe = async () => {
+    try {
+      const { data } = await apiClient.get<User>("/auth/me");
+      setUser(data);      
+    } catch {
+      setUser(null);
+    }
+  };
+
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    let isMounted = true;
+    (async () => {
       setIsLoading(true);
-
       try {
-        // TODO: Store token as cookies
-        const token = localStorage.getItem("authToken");
-
-        if (!token) {
-          console.log("TOKEN NOT FOUND/LOGGED OUT");
-          setUser(null);
-
-          return;
-        }
-
-        // token validation with backend
-        console.log("Validating token..");
-        try {
-          await authApi.validateToken(token);
-        } catch (err) {
-          console.log("Invalid token, refreshing...");
-
-          // Refresh token
-          const refresh_token = localStorage.getItem("refreshToken");
-          if (!refresh_token) { throw new Error("Refresh token not found") };
-
-          const body = { token: refresh_token };
-          const refresh_res = await authApi.refreshToken(body);
-
-          localStorage.setItem("authToken", refresh_res.token.access_token);
-          localStorage.setItem("refreshToken", refresh_res.token.refresh_token);
-
-          console.log("Refresh token res:", refresh_res);
-          console.log("Successfully refreshed token");
-          return;
-        }
-
-        console.log("Authenticated!");
-      } catch (error) {
-        console.error("Auth check error:", error);
-        localStorage.removeItem("authToken");
-        setUser(null);
+        await fetchMe();
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
+    })();
+    return () => {
+      isMounted = false;
     };
-
-    checkAuthStatus();
-  }, [location.pathname]);
+    // Initial load only - token refresh is handled by useTokenRefresh hook
+  }, []);
 
   const login = async (email: string, password: string): Promise<void> => {
     setIsLoading(true);
-
     try {
-      // Create form data as expected by OAuth2PasswordRequestForm
-      const formData = new FormData();
-      formData.append('username', email);
-      formData.append('password', password);
+      const form = new FormData();
+      form.append("username", email);
+      form.append("password", password);
 
-      const authRes = await authApi.login(formData);
-
-      console.log("Login successful:", authRes);
-
-      // TODO: Backend must return a token.
-      if (!authRes.token.access_token || !authRes.token.refresh_token) {
-        throw new Error("Token not issued");
-      }
-
-      // Store authentication token
-      localStorage.setItem("authToken", authRes.token.access_token);
-      localStorage.setItem("refreshToken", authRes.token.refresh_token);
-
-      setUser(authRes.user);
+      // Server should set http-only cookies (access/refresh) via Set-Cookie
+      await apiClient.post("/auth/set-token", form);
+      await fetchMe();
+      
     } catch (error) {
-      console.log("Login error:", error);
+      setUser(null);
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const register = async (email: string, password: string, passwordConfirmation: string): Promise<void> => {
+  const register = async (email: string, password: string, _passwordConfirmation: string): Promise<void> => {
     setIsLoading(true);
-
     try {
-      const payload = {
-        email: email,
-        password: password,
-      }
+      await apiClient.post("/users/register", { email, password });
+      await login(email, password);
+      await fetchMe();
 
-      const authRes = await authApi.register(payload);
-
-      console.log("Login successful:", authRes);
-
-      if (!authRes.token.access_token || !authRes.token.refresh_token) {
-        throw new Error("Token not issued");
-      }
-
-      // Store authentication token
-      localStorage.setItem("authToken", authRes.token.access_token);
-      localStorage.setItem("refreshToken", authRes.token.refresh_token);
-
-      setUser(authRes.user);
     } catch (error) {
-      console.log("Register error:", error);
+      setUser(null);
       throw error;
     } finally {
       setIsLoading(false);
@@ -128,10 +77,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logout = async (): Promise<void> => {
-    localStorage.removeItem("authToken");
-    localStorage.removeItem("refreshToken");
-    setUser(null);
-  }
+    try {
+      // Server should clear cookies + revoke refresh token
+      await apiClient.post("/auth/logout");
+    } finally {
+      setUser(null);
+      navigate("/login", { replace: true });
+    }
+  };
 
   const value: AuthContextType = {
     user,
@@ -140,20 +93,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     register,
-  }
+  };
 
-  return (
-    <AuthContext.Provider value={value}>
-      {children}
-    </AuthContext.Provider>
-  );
-}
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+};
 
 export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
   }
-
   return context;
 };
