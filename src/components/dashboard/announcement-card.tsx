@@ -20,7 +20,7 @@ export function AnnouncementCard() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Announcements</h2>
+      <h2 className="text-3xl font-semibold">Announcements</h2>
       <div className="space-y-4
                       [&>*[data-slot=announcement-card]]:from-primary/15 
                       [&>*[data-slot=announcement-card]]:to-card 

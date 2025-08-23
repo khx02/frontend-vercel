@@ -48,7 +48,7 @@ export function TasksCards() {
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Tasks</h2>
+      <h2 className="text-3xl font-semibold">Tasks</h2>
       <div className="space-y-3
                       [&>*[data-slot=task-card]]:from-primary/15 
                       [&>*[data-slot=task-card]]:to-card 

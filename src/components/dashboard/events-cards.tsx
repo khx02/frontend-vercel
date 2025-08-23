@@ -14,15 +14,17 @@ export function EventsCards() {
   ];
 
   return (
-    <div className="space-y-4">
-      <h2 className="text-xl font-semibold">Event Overview</h2>
+    <Card className="p-6 from-primary/15 to-card bg-gradient-to-t shadow-lg border-primary/10">
+      <CardHeader className="p-0">
+        <CardTitle className="text-3xl font-semibold">Event Overview</CardTitle>
+      </CardHeader>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 gap-3 lg:gap-4
-                      [&>*[data-slot=event-card]]:from-primary/15 
+                      [&>*[data-slot=event-card]]:from-primary/10 
                       [&>*[data-slot=event-card]]:to-card 
                       [&>*[data-slot=event-card]]:bg-gradient-to-t
                       dark:[&>*[data-slot=event-card]]:bg-card  
-                      [&>*[data-slot=event-card]]:shadow-lg
-                      [&>*[data-slot=event-card]]:border-primary/10">
+                      [&>*[data-slot=event-card]]:shadow-md
+                      [&>*[data-slot=event-card]]:border-primary/5">
         {events.map((event) => (
           <Card key={event.id} className="p-4 min-w-[240px]" data-slot="event-card">
             <CardHeader className="p-0 space-y-3">
@@ -58,6 +60,6 @@ export function EventsCards() {
           </Card>
         ))}
       </div>
-    </div>
+    </Card>
   );
 }
