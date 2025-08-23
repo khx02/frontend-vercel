@@ -30,7 +30,6 @@ export function LogIn() {
 
     try {
       await login(values.email, values.password);
-
       // Redirect to dashboard
       navigate('/dashboard');
     } catch (err) {
