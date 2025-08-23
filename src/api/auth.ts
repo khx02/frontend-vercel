@@ -22,7 +22,6 @@ export const authApi = {
     return response.data;
   },
 
-  // Simple refresh endpoint for interceptor (cookie-based)
   refresh: async (): Promise<void> => {
     await apiClient.post('/auth/refresh_token');
   },
