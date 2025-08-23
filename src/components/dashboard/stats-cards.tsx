@@ -22,21 +22,21 @@ export function StatsCards() {
       <Card className="flex flex-col" data-slot="card">
         <CardHeader className="flex flex-col min-h-[40px] py-1">
           <CardDescription>Upcoming Events</CardDescription>
-          <CardTitle className="mt-auto">api</CardTitle>
+          <CardTitle className="mt-auto">5</CardTitle>
         </CardHeader>
       </Card>
 
       <Card className="flex flex-col" data-slot="card">
         <CardHeader className="flex flex-col min-h-[40px] py-1">
           <CardDescription>Completed Events</CardDescription>
-          <CardTitle className="mt-auto">api</CardTitle>
+          <CardTitle className="mt-auto">10</CardTitle>
         </CardHeader>
       </Card>
 
       <Card className="flex flex-col" data-slot="card">
         <CardHeader className="flex flex-col min-h-[40px] py-1">
           <CardDescription>Members</CardDescription>
-          <CardTitle className="mt-auto">api</CardTitle>
+          <CardTitle className="mt-auto">123</CardTitle>
         </CardHeader>
       </Card>
     </div>
