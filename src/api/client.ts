@@ -85,7 +85,7 @@ class ApiClient {
   private async refreshToken(): Promise<void> {
     try {
       // Call your refresh endpoint - using the correct endpoint
-      await this.axiosInstance.post('/auth/refresh_token');
+      await this.axiosInstance.post('/api/auth/refresh_token');
     } catch (error) {
       // If refresh fails, clear any stored auth state
       throw error;

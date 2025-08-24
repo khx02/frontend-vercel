@@ -19,7 +19,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Ask backend who the user is (cookie-based session)
   const fetchMe = async () => {
     try {
-      const { data } = await apiClient.get<User>("/auth/me");
+      const { data } = await apiClient.get<User>("/api/auth/me");
       setUser(data);      
     } catch {
       setUser(null);
@@ -50,7 +50,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       form.append("password", password);
 
       // Server should set http-only cookies (access/refresh) via Set-Cookie
-      await apiClient.post("/auth/set-token", form);
+      await apiClient.post("/api/auth/set-token", form);
       await fetchMe();
       
     } catch (error) {
@@ -64,7 +64,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (email: string, password: string, _passwordConfirmation: string): Promise<void> => {
     setIsLoading(true);
     try {
-      await apiClient.post("/users/register", { email, password });
+      await apiClient.post("/api/users/register", { email, password });
       await login(email, password);
       await fetchMe();
 
@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async (): Promise<void> => {
     try {
       // Server should clear cookies + revoke refresh token
-      await apiClient.post("/auth/logout");
+      await apiClient.post("/api/auth/logout");
     } finally {
       setUser(null);
       navigate("/login", { replace: true });
