@@ -1,26 +1,28 @@
-import type { AuthResponse, RefreshTokenPayload, RegisterPayload, ValidateTokenRes } from "@/types/auth";
+import type { AuthResponse, RefreshTokenPayload, RegisterPayload } from "@/types/auth";
 import { apiClient } from "./client"
 
 export const authApi = {
-  register: (data: RegisterPayload): Promise<AuthResponse> =>
-    apiClient.post('/users/register', data, {}, true),
-
-  login: (data: FormData): Promise<AuthResponse> =>
-    apiClient.post('/auth/token', data, {}, false),
-
-  logout: (): Promise<Response> =>
-    apiClient.post('/auth/logout'),
-
-  validateToken: (token: string): Promise<ValidateTokenRes> => {
-    const options = {
-      headers: {
-        'Authorization': `Bearer ${token}`,
-      },
-    };
-
-    return apiClient.post('/auth/validate_token', undefined, options, true);
+  register: async (data: RegisterPayload): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/users/register', data);
+    return response.data;
   },
 
-  refreshToken: (data: RefreshTokenPayload): Promise<AuthResponse> =>
-    apiClient.post('/auth/refresh_token', data, {}, true),
+  login: async (data: FormData): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/token', data);
+    return response.data;
+  },
+
+  logout: async (): Promise<void> => {
+    await apiClient.post('/auth/logout');
+  },
+
+
+  refreshToken: async (data: RefreshTokenPayload): Promise<AuthResponse> => {
+    const response = await apiClient.post<AuthResponse>('/auth/refresh_token', data);
+    return response.data;
+  },
+
+  refresh: async (): Promise<void> => {
+    await apiClient.post('/auth/refresh_token');
+  },
 };
