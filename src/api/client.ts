@@ -33,7 +33,7 @@ class ApiClient {
 
         if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
           // Don't try to refresh on /auth/me requests to avoid infinite loops
-          if (originalRequest.url?.includes('/auth/me')) {
+          if (originalRequest.url?.includes('/api/auth/me')) {
             return Promise.reject(error);
           }
 
