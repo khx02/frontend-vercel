@@ -8,7 +8,6 @@ export const teamApi = {
 
   getUserTeams: async (): Promise<TeamModel[]> => {
     const response = await apiClient.get<GetUserTeamsRes>(`/users/get-user-teams`);
-    console.log("Raw response:", response);
     return response.data.teams;
   }
 };
