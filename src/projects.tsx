@@ -1,6 +1,8 @@
 import { faker } from "@faker-js/faker";
 import { useState } from "react";
 import { KanbanBoard, KanbanCard, KanbanCards, KanbanHeader, KanbanProvider } from "./components/ui/shadcn-io/kanban";
+import { ListView } from "./components/ui/shadcn-io/kanban/list-view";
+import { Button } from "./components/ui/button";
 import { Avatar, AvatarFallback } from "./components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 
@@ -44,60 +46,72 @@ const shortDateFormatter = new Intl.DateTimeFormat('en-US', {
 
 export function Projects() {
   const [features, setFeatures] = useState(exampleFeatures);
+  const [view, setView] = useState<'kanban' | 'list'>('kanban');
 
   return (
     <div className="min-h-screen bg-background p-8">
       <h1 className="text-3xl font-bold text-left mb-8">Projects</h1>
-
-      <KanbanProvider
-        columns={columns}
-        data={features}
-        onDataChange={setFeatures}
-      >
-        {(column) => (
-          <KanbanBoard id={column.id} key={column.id} >
-            <KanbanHeader>
-              <div className="flex items-center gap-2">
-                <div
-                  className="h-2 w-2 rounded-full"
-                  style={{ backgroundColor: column.color }}
-                />
-                <span>{column.name}</span>
-              </div>
-            </KanbanHeader>
-            <KanbanCards id={column.id}>
-              {(feature: (typeof features)[number]) => (
-                <KanbanCard
-                  column={column.id}
-                  id={feature.id}
-                  key={feature.id}
-                  name={feature.name}
-                >
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="flex flex-col gap-1">
-                      <p className="m-0 flex-1 font-medium text-sm">
-                        {feature.name}
-                      </p>
+      <div className="mb-4 flex gap-2">
+        <Button variant={view === 'kanban' ? 'default' : 'outline'} onClick={() => setView('kanban')}>
+          Kanban View
+        </Button>
+        <Button variant={view === 'list' ? 'default' : 'outline'} onClick={() => setView('list')}>
+          List View
+        </Button>
+      </div>
+      {view === 'kanban' ? (
+        <KanbanProvider
+          columns={columns}
+          data={features}
+          onDataChange={setFeatures}
+        >
+          {(column) => (
+            <KanbanBoard id={column.id} key={column.id} >
+              <KanbanHeader>
+                <div className="flex items-center gap-2">
+                  <div
+                    className="h-2 w-2 rounded-full"
+                    style={{ backgroundColor: column.color }}
+                  />
+                  <span>{column.name}</span>
+                </div>
+              </KanbanHeader>
+              <KanbanCards id={column.id}>
+                {(feature: (typeof features)[number]) => (
+                  <KanbanCard
+                    column={column.id}
+                    id={feature.id}
+                    key={feature.id}
+                    name={feature.name}
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex flex-col gap-1">
+                        <p className="m-0 flex-1 font-medium text-sm">
+                          {feature.name}
+                        </p>
+                      </div>
+                      {feature.owner && (
+                        <Avatar className="h-4 w-4 shrink-0">
+                          <AvatarImage src={feature.owner.image} />
+                          <AvatarFallback>
+                            {feature.owner.name?.slice(0, 2)}
+                          </AvatarFallback>
+                        </Avatar>
+                      )}
                     </div>
-                    {feature.owner && (
-                      <Avatar className="h-4 w-4 shrink-0">
-                        <AvatarImage src={feature.owner.image} />
-                        <AvatarFallback>
-                          {feature.owner.name?.slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
-                  </div>
-                  <p className="m-0 text-muted-foreground text-xs">
-                    {shortDateFormatter.format(feature.startAt)} -{' '}
-                    {dateFormatter.format(feature.endAt)}
-                  </p>
-                </KanbanCard>
-              )}
-            </KanbanCards>
-          </KanbanBoard>
-        )}
-      </KanbanProvider>
+                    <p className="m-0 text-muted-foreground text-xs">
+                      {shortDateFormatter.format(feature.startAt)} -{' '}
+                      {dateFormatter.format(feature.endAt)}
+                    </p>
+                  </KanbanCard>
+                )}
+              </KanbanCards>
+            </KanbanBoard>
+          )}
+        </KanbanProvider>
+      ) : (
+        <ListView items={features} />
+      )}
     </div>
   );
 }
