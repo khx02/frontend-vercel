@@ -4,10 +4,11 @@ import { teamApi } from "@/api/team";
 
 const initialState: UserTeamsState = {
   teams: [],
+  isFetchingTeams: false,
 };
 
 export const fetchTeams = createAsyncThunk('teams/fetchTeams', async () => {
-  const teams = teamApi.getUserTeams();
+  const teams = await teamApi.getUserTeams();
   return teams;
 });
 
@@ -28,9 +29,17 @@ const teamsSlice = createSlice({
     },
   },
   extraReducers: builder => {
-    builder.addCase(fetchTeams.fulfilled, (state, action) => {
-      state.teams = action.payload;
-    });
+    builder
+      .addCase(fetchTeams.pending, (state) => {
+        state.isFetchingTeams = true;
+      })
+      .addCase(fetchTeams.fulfilled, (state, action) => {
+        state.isFetchingTeams = false;
+        state.teams = action.payload;
+      })
+      .addCase(fetchTeams.rejected, (state) => {
+        state.isFetchingTeams = false;
+      });
   },
 });
 

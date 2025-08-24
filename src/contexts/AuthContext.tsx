@@ -20,7 +20,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const fetchMe = async () => {
     try {
       const { data } = await apiClient.get<User>("/auth/me");
-      setUser(data);      
+      setUser(data);
     } catch {
       setUser(null);
     }
@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // Server should set http-only cookies (access/refresh) via Set-Cookie
       await apiClient.post("/auth/set-token", form);
       await fetchMe();
-      
+
     } catch (error) {
       setUser(null);
       throw error;

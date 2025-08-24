@@ -5,7 +5,9 @@ import { useTokenRefresh } from "./hooks/useTokenRefresh";
 
 export function Layout() {
   // Initialize token refresh with your preferred options
-  useTokenRefresh();
+  useTokenRefresh({
+    excludeRoutes: ['/login', '/signup', '/']
+  });
 
   return (
     <SidebarProvider>

@@ -5,7 +5,7 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://localhost:8000/api";
 
 class ApiClient {
   private axiosInstance: AxiosInstance;
@@ -78,7 +78,7 @@ class ApiClient {
         resolve();
       }
     });
-    
+
     this.failedQueue = [];
   }
 

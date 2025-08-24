@@ -1,10 +1,14 @@
-import type { JoinTeamPayload, TeamModel } from "@/types/team";
+import type { GetUserTeamsRes, JoinTeamPayload, TeamModel } from "@/types/team";
 import { apiClient } from "./client";
 
 export const teamApi = {
-  join: (data: JoinTeamPayload): Promise<void> =>
-    apiClient.post(`/team/join_team/${data.team_id}`, data),
+  join: async (data: JoinTeamPayload): Promise<void> => {
+    await apiClient.post(`/team/join-team/${data.team_id}`, data);
+  },
 
-  getUserTeams: (): Promise<TeamModel[]> =>
-    apiClient.get(`/users/get-user-teams`),
+  getUserTeams: async (): Promise<TeamModel[]> => {
+    const response = await apiClient.get<GetUserTeamsRes>(`/users/get-user-teams`);
+    console.log("Raw response:", response);
+    return response.data.teams;
+  }
 };

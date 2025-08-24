@@ -11,6 +11,11 @@ export interface TeamModel {
   project_ids: string[];
 }
 
+export interface GetUserTeamsRes {
+  teams: TeamModel[];
+}
+
 export interface UserTeamsState {
   teams: TeamModel[];
+  isFetchingTeams: boolean;
 }

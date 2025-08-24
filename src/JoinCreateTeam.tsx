@@ -24,8 +24,8 @@ export function JoinCreateTeam() {
     setIsLoading(true);
 
     try {
-      await teamApi.join(
     } catch (err) {
+      console.error(err);
     } finally {
       setIsLoading(false);
     }

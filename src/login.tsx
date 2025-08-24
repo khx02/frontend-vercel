@@ -6,8 +6,11 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./components/ui/form";
 import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
+import { useDispatch, useSelector } from "react-redux";
+import { type AppDispatch, type RootState } from "./lib/store";
+import { fetchTeams } from "./features/teams/teamSlice";
 
 
 
@@ -18,6 +21,7 @@ const logInFormSchema = z.object({
 
 export function LogIn() {
   const { login, isLoading } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -30,8 +34,11 @@ export function LogIn() {
 
     try {
       await login(values.email, values.password);
-      // Redirect to dashboard
-      navigate('/dashboard');
+      const teams = await dispatch(fetchTeams()).unwrap();
+
+      // If user has teams, navigate to dashboard, otherwise prompt user to
+      // create/join a team.
+      teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     }
