@@ -2,14 +2,25 @@ import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Button } from "./components/ui/button";
-import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle } from "./components/ui/card";
-import { Form, FormControl, FormField, FormItem, FormLabel } from "./components/ui/form";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./components/ui/card";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+} from "./components/ui/form";
 import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
-
-
 
 const logInFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -31,11 +42,11 @@ export function LogIn() {
     try {
       await login(values.email, values.password);
       // Redirect to dashboard
-      navigate('/dashboard');
+      navigate("/dashboard");
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong');
+      setError(err instanceof Error ? err.message : "Something went wrong");
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-background flex justify-center items-center">
@@ -58,7 +69,10 @@ export function LogIn() {
             </div>
           )}
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="flex flex-col gap-3"
+            >
               <FormField
                 control={form.control}
                 name="email"
@@ -66,7 +80,11 @@ export function LogIn() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="johndoe@example.com" type="email" {...field} />
+                      <Input
+                        placeholder="johndoe@example.com"
+                        type="email"
+                        {...field}
+                      />
                     </FormControl>
                   </FormItem>
                 )}
