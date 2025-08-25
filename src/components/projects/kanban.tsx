@@ -4,6 +4,7 @@ import {
   KanbanCards,
   KanbanHeader,
   KanbanProvider,
+  type KanbanItemProps,
 } from "@/components/ui/shadcn-io/kanban";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
@@ -15,6 +16,7 @@ interface KanbanProps {
   setFeatures: React.Dispatch<React.SetStateAction<Feature[]>>;
   dateFormatter: Intl.DateTimeFormat;
   shortDateFormatter: Intl.DateTimeFormat;
+  onSelect: React.Dispatch<React.SetStateAction<KanbanItemProps | null>>;
 }
 
 export function Kanban({
@@ -23,6 +25,7 @@ export function Kanban({
   setFeatures,
   dateFormatter,
   shortDateFormatter,
+  onSelect,
 }: KanbanProps) {
   return (
     <KanbanProvider
@@ -48,6 +51,7 @@ export function Kanban({
                 id={feature.id}
                 key={feature.id}
                 name={feature.name}
+                onClick={() => onSelect(feature)}
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex flex-col gap-1">

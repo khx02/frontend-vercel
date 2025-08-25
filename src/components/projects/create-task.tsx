@@ -40,7 +40,7 @@ export function CreateTask() {
               <Input
                 id="task-description-1"
                 name="task-description"
-                placeholder="Prepare the budget slides for the annual meeting"
+                placeholder="Prepare the budget slides for the annual meeting."
               />
             </div>
             <div className="grid gap-3">

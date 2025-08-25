@@ -5,6 +5,8 @@ import { ListView } from "./components/projects/list-view";
 import { faker } from "@faker-js/faker";
 import type { Column, User, Feature } from "@/types/projects";
 import { CreateTask } from "./components/projects/create-task";
+import { KanbanItemSheet } from "@/components/ui/shadcn-io/kanban/kanban-item-sheet";
+import type { KanbanItemProps } from "@/components/ui/shadcn-io/kanban";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -47,6 +49,9 @@ const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
 export function Projects() {
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [features, setFeatures] = useState(exampleFeatures);
+  const [selectedItem, setSelectedItem] = useState<KanbanItemProps | null>(
+    null
+  );
 
   return (
     <div className="min-h-screen bg-background p-8">
@@ -75,10 +80,17 @@ export function Projects() {
           setFeatures={setFeatures}
           dateFormatter={dateFormatter}
           shortDateFormatter={shortDateFormatter}
+          onSelect={setSelectedItem}
         />
       ) : (
-        <ListView items={features} />
+        <ListView items={features} onSelect={setSelectedItem} />
       )}
+
+      <KanbanItemSheet
+        item={selectedItem}
+        open={!!selectedItem}
+        onOpenChange={(open) => !open && setSelectedItem(null)}
+      />
     </div>
   );
 }

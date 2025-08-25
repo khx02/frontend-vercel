@@ -32,6 +32,7 @@ import tunnel from 'tunnel-rat';
 import { Card } from '@/components/ui/card';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import { cn } from '@/lib/utils';
+import { MoreHorizontal } from 'lucide-react';
 
 const t = tunnel();
 
@@ -91,6 +92,7 @@ export const KanbanBoard = ({ id, children, className }: KanbanBoardProps) => {
 export type KanbanCardProps<T extends KanbanItemProps = KanbanItemProps> = T & {
   children?: ReactNode;
   className?: string;
+  onClick?: () => void;
 };
 
 export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
@@ -98,6 +100,7 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
   name,
   children,
   className,
+  onClick,
 }: KanbanCardProps<T>) => {
   const {
     attributes,
@@ -118,15 +121,34 @@ export const KanbanCard = <T extends KanbanItemProps = KanbanItemProps>({
 
   return (
     <>
-      <div style={style} {...listeners} {...attributes} ref={setNodeRef}>
+      <div style={style} ref={setNodeRef}>
         <Card
           className={cn(
-            'cursor-grab gap-4 rounded-md p-3 shadow-sm',
+            'cursor-grab gap-4 rounded-md p-3 shadow-sm relative group',
             isDragging && 'pointer-events-none cursor-grabbing opacity-30',
             className
           )}
+          {...attributes}
+          {...listeners}
         >
           {children ?? <p className="m-0 font-medium text-sm">{name}</p>}
+          {onClick && (
+            <button
+              className="absolute bottom-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity bg-background border rounded p-1.5 text-xs hover:bg-muted z-10"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onClick();
+              }}
+              onMouseDown={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+              }}
+              title="Show Details"
+            >
+              <MoreHorizontal size={14} />
+            </button>
+          )}
         </Card>
       </div>
       {activeCardId === id && (

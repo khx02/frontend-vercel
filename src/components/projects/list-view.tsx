@@ -11,19 +11,14 @@ import { cn } from "@/lib/utils";
 import type { KanbanItemProps } from "@/components/ui/shadcn-io/kanban/index";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
-import { useState } from "react";
-import { KanbanItemSheet } from "@/components/ui/shadcn-io/kanban/kanban-item-sheet";
 
 type ListViewProps = {
   items: KanbanItemProps[];
   className?: string;
+  onSelect: React.Dispatch<React.SetStateAction<KanbanItemProps | null>>;
 };
 
-export function ListView({ items, className }: ListViewProps) {
-  const [selectedItem, setSelectedItem] = useState<KanbanItemProps | null>(
-    null
-  );
-
+export function ListView({ items, className, onSelect }: ListViewProps) {
   return (
     <>
       <ScrollArea className={cn("overflow-auto", className)}>
@@ -41,7 +36,7 @@ export function ListView({ items, className }: ListViewProps) {
               <TableRow
                 key={item.id}
                 className="cursor-pointer hover:bg-muted/50"
-                onClick={() => setSelectedItem(item)}
+                onClick={() => onSelect(item)}
               >
                 <TableCell className="font-medium">{item.name}</TableCell>
                 <TableCell>{item.column ?? "—"}</TableCell>
@@ -83,12 +78,6 @@ export function ListView({ items, className }: ListViewProps) {
         </Table>
         <ScrollBar orientation="vertical" />
       </ScrollArea>
-
-      <KanbanItemSheet
-        item={selectedItem}
-        open={!!selectedItem}
-        onOpenChange={(open) => !open && setSelectedItem(null)}
-      />
     </>
   );
 }
