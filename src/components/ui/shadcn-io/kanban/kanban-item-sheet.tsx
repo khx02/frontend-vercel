@@ -5,8 +5,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
+// import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+// import { AvatarImage } from "@radix-ui/react-avatar";
 import type { KanbanItemProps } from "./index";
 
 const getDate = (d: unknown): Date | null => {
