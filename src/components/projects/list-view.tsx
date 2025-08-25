@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import type { KanbanItemProps } from "@/components/ui/shadcn-io/kanban/index";
+import type { KanbanItemProps } from "@/components/projects/index";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 

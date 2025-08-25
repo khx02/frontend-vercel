@@ -5,7 +5,7 @@ import {
   KanbanHeader,
   KanbanProvider,
   type KanbanItemProps,
-} from "@/components/ui/shadcn-io/kanban";
+} from "@/components/projects";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import type { Column, Feature } from "@/types/projects";
