@@ -17,7 +17,7 @@ export function CreateTask() {
     <Dialog>
       <form>
         <DialogTrigger asChild>
-          <Button variant="outline">Create Task</Button>
+          <Button>Create Task</Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -36,8 +36,16 @@ export function CreateTask() {
               />
             </div>
             <div className="grid gap-3">
-              <Label htmlFor="Assignee-1">Assign to</Label>
-              <Input id="Assignee-1" name="aissignee" placeholder="John Doe" />
+              <Label htmlFor="task-description-1">Task Description</Label>
+              <Input
+                id="task-description-1"
+                name="task-description"
+                placeholder="Prepare the budget slides for the annual meeting"
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="assignee-1">Assign to</Label>
+              <Input id="assignee-1" name="assignee" placeholder="John Doe" />
             </div>
           </div>
           <DialogFooter>
