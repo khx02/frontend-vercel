@@ -17,7 +17,13 @@ interface KanbanProps {
   shortDateFormatter: Intl.DateTimeFormat;
 }
 
-export function Kanban({ columns, features, setFeatures, dateFormatter, shortDateFormatter }: KanbanProps) {
+export function Kanban({
+  columns,
+  features,
+  setFeatures,
+  dateFormatter,
+  shortDateFormatter,
+}: KanbanProps) {
   return (
     <KanbanProvider
       columns={columns}
@@ -25,7 +31,7 @@ export function Kanban({ columns, features, setFeatures, dateFormatter, shortDat
       onDataChange={setFeatures}
     >
       {(column) => (
-        <KanbanBoard id={column.id} key={column.id} >
+        <KanbanBoard id={column.id} key={column.id}>
           <KanbanHeader>
             <div className="flex items-center gap-2">
               <div
@@ -59,7 +65,7 @@ export function Kanban({ columns, features, setFeatures, dateFormatter, shortDat
                   )}
                 </div>
                 <p className="m-0 text-muted-foreground text-xs">
-                  {shortDateFormatter.format(feature.startAt)} -{' '}
+                  {shortDateFormatter.format(feature.startAt)} -{" "}
                   {dateFormatter.format(feature.endAt)}
                 </p>
               </KanbanCard>
