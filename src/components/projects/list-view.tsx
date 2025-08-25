@@ -11,11 +11,11 @@ import {
 } from "@/components/ui/table";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
-import type { KanbanItemProps } from "./index";
+import type { KanbanItemProps } from "@/components/ui/shadcn-io/kanban/index";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import { useState } from "react";
-import { KanbanItemSheet } from "./kanban-item-sheet";
+import { KanbanItemSheet } from "@/components/ui/shadcn-io/kanban/kanban-item-sheet";
 
 
 type ListViewProps = {
