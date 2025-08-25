@@ -4,6 +4,7 @@ import { useState } from "react";
 import { ListView } from "./components/projects/list-view";
 import { faker } from "@faker-js/faker";
 import type { Column, User, Feature } from "@/types/projects";
+import { CreateTask } from "./components/projects/create-task";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
 
@@ -43,24 +44,32 @@ const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
   day: "numeric",
 });
 
-
 export function Projects() {
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [features, setFeatures] = useState(exampleFeatures);
-  
+
   return (
     <div className="min-h-screen bg-background p-8">
-      <h1 className="text-3xl font-bold text-left mb-8">Projects</h1>
+      <div className="flex items-center justify-between mb-8">
+        <h1 className="text-3xl font-bold">Projects</h1>
+        <CreateTask />
+      </div>
       <div className="mb-4 flex gap-2">
-        <Button variant={view === 'kanban' ? 'default' : 'outline'} onClick={() => setView('kanban')}>
+        <Button
+          variant={view === "kanban" ? "default" : "outline"}
+          onClick={() => setView("kanban")}
+        >
           Kanban View
         </Button>
-        <Button variant={view === 'list' ? 'default' : 'outline'} onClick={() => setView('list')}>
+        <Button
+          variant={view === "list" ? "default" : "outline"}
+          onClick={() => setView("list")}
+        >
           List View
         </Button>
       </div>
-      {view === 'kanban' ? (
-        <Kanban 
+      {view === "kanban" ? (
+        <Kanban
           columns={columns}
           features={features}
           setFeatures={setFeatures}
