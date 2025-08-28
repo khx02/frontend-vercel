@@ -2,6 +2,7 @@ import { Calendar, Home, LogOut, Settings, Wrench } from "lucide-react";
 import { Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel, SidebarMenu, SidebarMenuButton, SidebarMenuItem } from "../ui/sidebar";
 import { useNavigate } from "react-router";
 import { useAuth } from "@/contexts/AuthContext";
+import { TeamsMenu } from "./team-menu";
 
 const items = [
   {
@@ -45,10 +46,13 @@ export function AppSidebar() {
           <SidebarGroupLabel>Task Management</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
+              <SidebarMenuItem>
+                <TeamsMenu />
+              </SidebarMenuItem>
               {items.map(item => (
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton asChild>
-                    <a 
+                    <a
                       onClick={() => void navigate(item.url)}
                       tabIndex={0}
                       onKeyDown={(e) => {
@@ -67,16 +71,16 @@ export function AppSidebar() {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        
+
         {/* Spacer to push logout button to bottom */}
         <div className="flex-1" />
-        
+
         <SidebarGroup className="mt-auto">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton asChild>
-                  <a 
+                  <a
                     onClick={handleLogout}
                     tabIndex={0}
                     onKeyDown={(e) => {
