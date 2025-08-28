@@ -2,10 +2,33 @@ import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/tool
 import { type TeamModel, type UserTeamsState } from "@/types/team";
 import { teamApi } from "@/api/team";
 
+const getSelectedTeamFromStorage = (): TeamModel | null => {
+  if (typeof window === 'undefined') return null;
+  try {
+    const stored = localStorage.getItem("selectedTeam");
+    return stored ? JSON.parse(stored) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+const saveSelectedTeamToStorage = (team: TeamModel | null) => {
+  if (typeof window === 'undefined') return null;
+  try {
+    if (team) {
+      localStorage.setItem("selectedTeam", JSON.stringify(team));
+    } else {
+      localStorage.removeItem("selectedTeam");
+    }
+  } catch {
+    // ignore localstorage errors 
+  }
+}
+
 const initialState: UserTeamsState = {
   teams: [],
   isFetchingTeams: false,
-  selectedTeam: null,
+  selectedTeam: getSelectedTeamFromStorage(),
 };
 
 export const fetchTeams = createAsyncThunk('teams/fetchTeams', async () => {
@@ -31,14 +54,12 @@ const teamsSlice = createSlice({
     // Selected team operations
     setSelectedTeam(state, action: PayloadAction<TeamModel | null>) {
       state.selectedTeam = action.payload;
+      saveSelectedTeamToStorage(action.payload);
     },
     setSelectedTeamById(state, action: PayloadAction<string>) {
-      console.log("Updating selected team...");
-
       const team = state.teams.find(team => team.id === action.payload);
       state.selectedTeam = team || null;
-
-      console.log("New selected Team:", state.selectedTeam);
+      saveSelectedTeamToStorage(team || null);
     },
     clearSelectedTeam(state) {
       state.selectedTeam = null;
@@ -53,17 +74,18 @@ const teamsSlice = createSlice({
         state.isFetchingTeams = false;
         state.teams = action.payload;
 
-        console.log("Selected team:", state.selectedTeam);
+        // if there is a selected team, validate the selected team exists
+        if (state.selectedTeam && !action.payload.find(team => team.id === state.selectedTeam!.id)) {
+          const team = action.payload.length > 0 ? action.payload[0] : null;
+          state.selectedTeam = team;
+          saveSelectedTeamToStorage(team);
+        }
 
         // Select first team if no team is selected and teams exist
-        if (!state.selectedTeam && action.payload.length > 0) {
-          state.selectedTeam = action.payload[0];
-          console.log("No team selected, setting team:", action.payload[0]);
-        }
-        // Validate the selected team exists
-        else if (state.selectedTeam && !action.payload.find(team => team.id === state.selectedTeam!.id)) {
-          state.selectedTeam = action.payload.length > 0 ? action.payload[0] : null;
-          console.log("Team no longer exists, setting new team:", state.selectedTeam);
+        else if (!state.selectedTeam && action.payload.length > 0) {
+          const team = action.payload[0];
+          state.selectedTeam = team;
+          saveSelectedTeamToStorage(team);
         }
       })
       .addCase(fetchTeams.rejected, (state) => {
