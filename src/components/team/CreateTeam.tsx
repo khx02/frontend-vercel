@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Button } from "../ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "../ui/card";
 import { useAppDispatch } from "@/hooks/redux";
-import { useNavigate } from "react-router";
 import { teamApi } from "@/api/team";
 import z from "zod";
 import { useForm } from "react-hook-form";
@@ -11,15 +10,19 @@ import { addTeam } from "@/features/teams/teamSlice";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "../ui/form";
 import { Input } from "../ui/input";
 
+export interface CreateTeamProps {
+  onCreate?: () => void;
+  description?: string;
+}
+
 const createFormSchema = z.object({
   name: z.string(),
 });
 
-export function CreateTeam() {
+export function CreateTeam({ onCreate, description }: CreateTeamProps) {
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const dispatch = useAppDispatch();
-  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof createFormSchema>>({
     resolver: zodResolver(createFormSchema),
@@ -38,9 +41,13 @@ export function CreateTeam() {
       // const teams = await dispatch(fetchTeams()).unwrap();
       dispatch(addTeam(team));
 
-      navigate("/dashboard");
+      onCreate && onCreate();
     } catch (err) {
-      setError("Failed to create team, please try again");
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Failed to create team, please try again");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -50,9 +57,11 @@ export function CreateTeam() {
     <Card className="w-full max-w-sm">
       <CardHeader>
         <CardTitle>Create Team</CardTitle>
-        <CardDescription>
-          Don't have a team? Create a team now.
-        </CardDescription>
+        {description &&
+          <CardDescription>
+            {description}
+          </CardDescription>
+        }
       </CardHeader>
       <CardContent>
         <Form {...form}>

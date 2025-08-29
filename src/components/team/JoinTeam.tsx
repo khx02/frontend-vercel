@@ -6,20 +6,20 @@ import { Input } from "../ui/input";
 import z from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router";
 import { teamApi } from "@/api/team";
-import { useAppDispatch } from "@/hooks/redux";
-import { fetchTeams } from "@/features/teams/teamSlice";
+
+export interface JoinTeamProps {
+  onJoin?: () => void;
+  description?: string | null;
+}
 
 const joinFormSchema = z.object({
   team_id: z.string(),
 });
 
-export function JoinTeam() {
+export function JoinTeam({ onJoin, description }: JoinTeamProps) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const dispatch = useAppDispatch();
-  const navigate = useNavigate();
 
   const form = useForm<z.infer<typeof joinFormSchema>>({
     resolver: zodResolver(joinFormSchema),
@@ -31,16 +31,14 @@ export function JoinTeam() {
 
     try {
       await teamApi.join({ team_id: values.team_id });
-      const teams = await dispatch(fetchTeams()).unwrap();
-
-      if (teams.length === 0) {
-        setError("Failed to join team, invalid code");
-        return;
-      }
-
-      navigate('/dashboard');
+      onJoin && onJoin();
     } catch (err) {
       console.error(err);
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("An unexpected error occurred");
+      }
     } finally {
       setIsLoading(false);
     }
@@ -50,9 +48,11 @@ export function JoinTeam() {
     <Card className="w-full h-full max-w-sm max-h-sm">
       <CardHeader>
         <CardTitle>Join Team</CardTitle>
-        <CardDescription>
-          Already have a team? Enter your team code below.
-        </CardDescription>
+        {description && (
+          <CardDescription>
+            {description}
+          </CardDescription>
+        )}
       </CardHeader>
       <CardContent>
         <Form {...form}>

@@ -25,6 +25,11 @@ const saveSelectedTeamToStorage = (team: TeamModel | null) => {
   }
 }
 
+export const removeTeam = createAsyncThunk('teams/removeTeam', async (team_id: string) => {
+  await teamApi.leave({ team_id: team_id });
+  return team_id;
+});
+
 const initialState: UserTeamsState = {
   teams: [],
   isFetchingTeams: false,
@@ -47,9 +52,9 @@ const teamsSlice = createSlice({
     addTeam(state, action: PayloadAction<TeamModel>) {
       state.teams.push(action.payload);
     },
-    removeTeam(state, action: PayloadAction<string>) {
-      state.teams = state.teams.filter(team => team.id !== action.payload);
-    },
+    // removeTeam(state, action: PayloadAction<string>) {
+    //   state.teams = state.teams.filter(team => team.id !== action.payload);
+    // },
 
     // Selected team operations
     setSelectedTeam(state, action: PayloadAction<TeamModel | null>) {
@@ -90,6 +95,16 @@ const teamsSlice = createSlice({
       })
       .addCase(fetchTeams.rejected, (state) => {
         state.isFetchingTeams = false;
+      })
+      .addCase(removeTeam.fulfilled, (state, action) => {
+        const removedTeamId = action.payload;
+        state.teams = state.teams.filter(team => team.id !== removedTeamId);
+
+        if (state.selectedTeam && state.selectedTeam.id === removedTeamId) {
+          const newSelectedTeam = state.teams.length > 0 ? state.teams[0] : null;
+          state.selectedTeam = newSelectedTeam;
+          saveSelectedTeamToStorage(newSelectedTeam);
+        }
       });
   },
 });
@@ -97,7 +112,6 @@ const teamsSlice = createSlice({
 export const {
   setTeams,
   addTeam,
-  removeTeam,
   setSelectedTeam,
   setSelectedTeamById,
   clearSelectedTeam,

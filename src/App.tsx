@@ -9,6 +9,7 @@ import { SignUp } from "@/signup";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
 import { JoinCreateTeam } from "./JoinCreateTeam";
+import { ManageTeams } from "./ManageTeams";
 
 function App() {
 
@@ -43,6 +44,7 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/teams" element={<ManageTeams />} />
           </Route>
         </Routes>
       </AuthProvider>

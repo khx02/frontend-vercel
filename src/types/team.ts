@@ -7,7 +7,11 @@ export interface CreateTeamPayload {
 }
 
 export interface CreateTeamRes {
-  team: TeamModel,
+  team: TeamModel;
+}
+
+export interface LeaveTeamPayload {
+  team_id: string;
 }
 
 export interface TeamModel {
