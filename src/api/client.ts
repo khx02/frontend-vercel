@@ -1,4 +1,5 @@
 import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import { authApi } from "./auth";
 
 // Extend the Axios request config to include our custom _retry property
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -85,7 +86,7 @@ class ApiClient {
   private async refreshToken(): Promise<void> {
     try {
       // Call your refresh endpoint - using the correct endpoint
-      await this.axiosInstance.post('/auth/refresh_token');
+      await authApi.refresh();
     } catch (error) {
       // If refresh fails, clear any stored auth state
       throw error;

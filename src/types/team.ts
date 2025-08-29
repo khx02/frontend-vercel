@@ -2,6 +2,14 @@ export interface JoinTeamPayload {
   team_id: string;
 }
 
+export interface CreateTeamPayload {
+  name: string;
+}
+
+export interface CreateTeamRes {
+  team: TeamModel,
+}
+
 export interface TeamModel {
   id: string;
   name: string;

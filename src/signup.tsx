@@ -8,8 +8,8 @@ import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
-import { useDispatch, useSelector } from "react-redux";
-import { type AppDispatch, type RootState } from "./lib/store";
+import { useDispatch } from "react-redux";
+import { type AppDispatch } from "./lib/store";
 import { fetchTeams } from "./features/teams/teamSlice";
 
 

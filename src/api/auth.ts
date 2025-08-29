@@ -18,11 +18,11 @@ export const authApi = {
 
 
   refreshToken: async (data: RefreshTokenPayload): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>('/auth/refresh_token', data);
+    const response = await apiClient.post<AuthResponse>('/auth/refresh-token', data);
     return response.data;
   },
 
   refresh: async (): Promise<void> => {
-    await apiClient.post('/auth/refresh_token');
+    await apiClient.post('/auth/refresh-token');
   },
 };
