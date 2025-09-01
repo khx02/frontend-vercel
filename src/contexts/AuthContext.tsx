@@ -25,7 +25,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   // Ask backend who the user is (cookie-based session)
   const fetchMe = async () => {
     try {
-      const { data } = await apiClient.get<User>("/api/auth/me");
+      const { data } = await apiClient.get<User>("/auth/me");
       setUser(data);
     } catch {
       setUser(null);
