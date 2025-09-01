@@ -41,6 +41,13 @@ export function Projects() {
     null
   );
 
+  const handleDeleteItem = (itemId: string) => {
+    setFeatures((prevFeatures) =>
+      prevFeatures.filter((feature) => feature.id !== itemId)
+    );
+    setSelectedItem(null);
+  };
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="flex items-center justify-between mb-8">
@@ -80,6 +87,7 @@ export function Projects() {
         item={selectedItem}
         open={!!selectedItem}
         onOpenChange={(open) => !open && setSelectedItem(null)}
+        onDelete={handleDeleteItem}
         columns={columns}
       />
     </div>

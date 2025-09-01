@@ -5,7 +5,8 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { CalendarIcon, UserIcon, HashIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { CalendarIcon, UserIcon, HashIcon, Trash2Icon } from "lucide-react";
 import type { KanbanItemProps } from "./index";
 import type { Column } from "@/types/projects";
 import { formatDateParts } from "@/utils/dateFormat";
@@ -16,6 +17,7 @@ type KanbanItemSheetProps = {
   item: KanbanItemProps | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onDelete?: (itemId: string) => void;
   columns?: Column[];
 };
 
@@ -23,6 +25,7 @@ export function KanbanItemSheet({
   item,
   open,
   onOpenChange,
+  onDelete,
   columns = [],
 }: KanbanItemSheetProps) {
   const getColumnName = (columnId: string) => {
@@ -104,6 +107,24 @@ export function KanbanItemSheet({
                 </div>
               </div>
             </div>
+
+            {/* Delete Button - Full Width Bar at Bottom */}
+            {onDelete && (
+              <div className="border-t border-border p-4 mt-auto">
+                <Button
+                  variant="destructive"
+                  size="lg"
+                  onClick={() => {
+                    onDelete(item.id);
+                    onOpenChange(false);
+                  }}
+                  className="w-full"
+                >
+                  <Trash2Icon className="h-4 w-4 mr-2" />
+                  Delete Task
+                </Button>
+              </div>
+            )}
           </div>
         )}
       </SheetContent>
