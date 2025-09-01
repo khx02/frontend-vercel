@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, UserIcon, HashIcon } from "lucide-react";
 import type { KanbanItemProps } from "./index";
+import type { Column } from "@/types/projects";
 
 const getDate = (d: unknown): Date | null => {
   if (typeof d === "string" || typeof d === "number") return new Date(d);
@@ -30,15 +31,23 @@ type KanbanItemSheetProps = {
   item: KanbanItemProps | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  columns?: Column[];
 };
 
 export function KanbanItemSheet({
   item,
   open,
   onOpenChange,
+  columns = [],
 }: KanbanItemSheetProps) {
+  const getColumnName = (columnId: string) => {
+    const column = columns.find((col) => col.id === columnId);
+    return column?.name || columnId;
+  };
+
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
+      case "planned":
       case "todo":
       case "backlog":
         return "bg-gray-100 text-gray-800 border-gray-200";
@@ -61,7 +70,7 @@ export function KanbanItemSheet({
         {item && (
           <div className="flex flex-col h-full">
             {/* Header */}
-            <SheetHeader className="pb-6 border-b">
+            <SheetHeader className="border-b-2 p-6">
               <SheetTitle className="text-xl font-semibold leading-tight">
                 {item.name}
               </SheetTitle>
@@ -70,10 +79,10 @@ export function KanbanItemSheet({
                 <Badge
                   variant="outline"
                   className={`${getStatusColor(
-                    item.column ?? ""
+                    getColumnName(item.column ?? "")
                   )} text-xs font-medium`}
                 >
-                  {item.column ?? "No Status"}
+                  {getColumnName(item.column ?? "") || "No Status"}
                 </Badge>
               </SheetDescription>
             </SheetHeader>
