@@ -48,6 +48,21 @@ export function Projects() {
     setSelectedItem(null);
   };
 
+  const handleUpdateItem = (
+    itemId: string,
+    updates: Partial<KanbanItemProps>
+  ) => {
+    setFeatures((prevFeatures) =>
+      prevFeatures.map((feature) =>
+        feature.id === itemId ? { ...feature, ...updates } : feature
+      )
+    );
+    // Update selectedItem if it's the one being edited
+    if (selectedItem?.id === itemId) {
+      setSelectedItem({ ...selectedItem, ...updates });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background p-8">
       <div className="flex items-center justify-between mb-8">
@@ -88,7 +103,9 @@ export function Projects() {
         open={!!selectedItem}
         onOpenChange={(open) => !open && setSelectedItem(null)}
         onDelete={handleDeleteItem}
+        onUpdate={handleUpdateItem}
         columns={columns}
+        users={users}
       />
     </div>
   );
