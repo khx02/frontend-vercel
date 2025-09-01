@@ -153,8 +153,10 @@ export function KanbanItemSheet({
                     <Select
                       value={editValues.column || ""}
                       onValueChange={(value) => {
-                        setEditValues({ column: value });
-                        setTimeout(() => saveEdit("column"), 1);
+                        if (onUpdate && item) {
+                          onUpdate(item.id, { column: value });
+                        }
+                        cancelEdit();
                       }}
                     >
                       <SelectTrigger className="w-32">
