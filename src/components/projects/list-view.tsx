@@ -12,6 +12,7 @@ import type { KanbanItemProps } from "@/components/projects/index";
 import type { Column } from "@/types/projects";
 import { formatDateRange } from "@/utils/dateFormat";
 import { ListViewAvatar } from "@/components/ui/user-avatar";
+import { ListViewStatusBadge } from "@/utils/statusBadge";
 
 type ListViewProps = {
   items: KanbanItemProps[];
@@ -30,6 +31,7 @@ export function ListView({
     const column = columns.find((col) => col.id === columnId);
     return column?.name || columnId;
   };
+
   return (
     <ScrollArea className={cn("overflow-auto", className)}>
       <Table>
@@ -49,7 +51,11 @@ export function ListView({
               onClick={() => onSelect(item)}
             >
               <TableCell className="font-medium">{item.name}</TableCell>
-              <TableCell>{getColumnName(item.column ?? "") || "—"}</TableCell>
+              <TableCell>
+                <ListViewStatusBadge
+                  status={getColumnName(item.column ?? "")}
+                />
+              </TableCell>
               <TableCell>
                 <ListViewAvatar owner={item.owner} />
               </TableCell>

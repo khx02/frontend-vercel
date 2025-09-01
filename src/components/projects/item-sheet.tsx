@@ -5,12 +5,12 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, UserIcon, HashIcon } from "lucide-react";
 import type { KanbanItemProps } from "./index";
 import type { Column } from "@/types/projects";
 import { formatDateParts } from "@/utils/dateFormat";
 import { ItemSheetAvatar } from "@/components/ui/user-avatar";
+import { ItemSheetStatusBadge } from "@/utils/statusBadge";
 
 type KanbanItemSheetProps = {
   item: KanbanItemProps | null;
@@ -30,23 +30,6 @@ export function KanbanItemSheet({
     return column?.name || columnId;
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status?.toLowerCase()) {
-      case "planned":
-      case "todo":
-      case "backlog":
-        return "bg-gray-100 text-gray-800 border-gray-200";
-      case "in progress":
-      case "doing":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "done":
-      case "completed":
-        return "bg-green-100 text-green-800 border-green-200";
-      case "review":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-    }
-  };
-
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent className="w-full sm:max-w-md p-4">
@@ -59,13 +42,9 @@ export function KanbanItemSheet({
               </SheetTitle>
               <SheetDescription className="flex items-center gap-2 mt-2">
                 <span className="text-base text-muted-foreground">Status:</span>
-                <Badge
-                  className={`${getStatusColor(
-                    getColumnName(item.column ?? "")
-                  )} text-lg`}
-                >
-                  {getColumnName(item.column ?? "") || "No Status"}
-                </Badge>
+                <ItemSheetStatusBadge
+                  status={getColumnName(item.column ?? "")}
+                />
               </SheetDescription>
             </SheetHeader>
 
