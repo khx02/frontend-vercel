@@ -4,9 +4,9 @@ import { SidebarProvider, SidebarTrigger } from "./components/ui/sidebar";
 import { useTokenRefresh } from "./hooks/useTokenRefresh";
 
 export function Layout() {
-  // Initialize token refresh with your preferred options
+  // Prevent these paths from doing the refresh logic
   useTokenRefresh({
-    excludeRoutes: ['/login', '/signup', '/']
+    excludeRoutes: ["/login", "/signup", "/"],
   });
 
   return (
