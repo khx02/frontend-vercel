@@ -9,13 +9,12 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
 import type { Column, Feature } from "@/types/projects";
+import { formatDateRange } from "@/utils/dateFormat";
 
 interface KanbanProps {
   columns: Column[];
   features: Feature[];
   setFeatures: React.Dispatch<React.SetStateAction<Feature[]>>;
-  dateFormatter: Intl.DateTimeFormat;
-  shortDateFormatter: Intl.DateTimeFormat;
   onSelect: React.Dispatch<React.SetStateAction<KanbanItemProps | null>>;
 }
 
@@ -23,8 +22,6 @@ export function Kanban({
   columns,
   features,
   setFeatures,
-  dateFormatter,
-  shortDateFormatter,
   onSelect,
 }: KanbanProps) {
   return (
@@ -69,8 +66,7 @@ export function Kanban({
                   )}
                 </div>
                 <p className="m-0 text-muted-foreground text-xs">
-                  {shortDateFormatter.format(feature.startAt)} -{" "}
-                  {dateFormatter.format(feature.endAt)}
+                  {formatDateRange(feature.startAt, feature.endAt)}
                 </p>
               </KanbanCard>
             )}

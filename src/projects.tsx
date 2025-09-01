@@ -34,17 +34,6 @@ const exampleFeatures: Feature[] = Array.from({ length: 20 })
     owner: faker.helpers.arrayElement(users),
   }));
 
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-
-const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-});
-
 export function Projects() {
   const [view, setView] = useState<"kanban" | "list">("kanban");
   const [features, setFeatures] = useState(exampleFeatures);
@@ -77,8 +66,6 @@ export function Projects() {
           columns={columns}
           features={features}
           setFeatures={setFeatures}
-          dateFormatter={dateFormatter}
-          shortDateFormatter={shortDateFormatter}
           onSelect={setSelectedItem}
         />
       ) : (

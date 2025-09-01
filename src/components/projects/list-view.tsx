@@ -12,6 +12,7 @@ import type { KanbanItemProps } from "@/components/projects/index";
 import type { Column } from "@/types/projects";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { AvatarImage } from "@radix-ui/react-avatar";
+import { formatDateRange } from "@/utils/dateFormat";
 
 type ListViewProps = {
   items: KanbanItemProps[];
@@ -76,7 +77,9 @@ export function ListView({
                 )}
               </TableCell>
               <TableCell>
-                {/* You can move date formatting into the sheet if you want */}—
+                <span className="text-sm">
+                  {formatDateRange(item.startAt, item.endAt)}
+                </span>
               </TableCell>
             </TableRow>
           ))}

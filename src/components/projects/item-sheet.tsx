@@ -10,22 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, UserIcon, HashIcon } from "lucide-react";
 import type { KanbanItemProps } from "./index";
 import type { Column } from "@/types/projects";
-
-const getDate = (d: unknown): Date | null => {
-  if (typeof d === "string" || typeof d === "number") return new Date(d);
-  if (d instanceof Date) return d;
-  return null;
-};
-
-const dateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-  year: "numeric",
-});
-const shortDateFormatter = new Intl.DateTimeFormat("en-US", {
-  month: "short",
-  day: "numeric",
-});
+import { formatDateParts } from "@/utils/dateFormat";
 
 type KanbanItemSheetProps = {
   item: KanbanItemProps | null;
@@ -130,25 +115,26 @@ export function KanbanItemSheet({
                   <span>Date Range</span>
                 </div>
                 <div className="pl-6">
-                  {getDate(item.startAt) && getDate(item.endAt) ? (
-                    <div className="space-y-1">
-                      <div className="text-base">
-                        <span className="font-medium">
-                          {shortDateFormatter.format(
-                            getDate(item.startAt) as Date
-                          )}
-                        </span>
-                        <span className="text-muted-foreground mx-2">→</span>
-                        <span className="font-medium">
-                          {dateFormatter.format(getDate(item.endAt) as Date)}
-                        </span>
+                  {(() => {
+                    const { startDate, endDate, isValid } = formatDateParts(
+                      item.startAt,
+                      item.endAt
+                    );
+
+                    return isValid ? (
+                      <div className="space-y-1">
+                        <div className="text-base">
+                          <span className="font-medium">{startDate}</span>
+                          <span className="text-muted-foreground mx-2">→</span>
+                          <span className="font-medium">{endDate}</span>
+                        </div>
                       </div>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      No dates set
-                    </span>
-                  )}
+                    ) : (
+                      <span className="text-sm text-muted-foreground">
+                        No dates set
+                      </span>
+                    );
+                  })()}
                 </div>
               </div>
 
