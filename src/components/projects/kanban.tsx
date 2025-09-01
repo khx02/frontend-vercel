@@ -6,10 +6,9 @@ import {
   KanbanProvider,
   type KanbanItemProps,
 } from "@/components/projects";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { AvatarImage } from "@radix-ui/react-avatar";
 import type { Column, Feature } from "@/types/projects";
 import { formatDateRange } from "@/utils/dateFormat";
+import { KanbanAvatar } from "@/components/ui/user-avatar";
 
 interface KanbanProps {
   columns: Column[];
@@ -56,14 +55,7 @@ export function Kanban({
                       {feature.name}
                     </p>
                   </div>
-                  {feature.owner && (
-                    <Avatar className="h-4 w-4 shrink-0">
-                      <AvatarImage src={feature.owner.image} />
-                      <AvatarFallback>
-                        {feature.owner.name?.slice(0, 2)}
-                      </AvatarFallback>
-                    </Avatar>
-                  )}
+                  {feature.owner && <KanbanAvatar owner={feature.owner} />}
                 </div>
                 <p className="m-0 text-muted-foreground text-xs">
                   {formatDateRange(feature.startAt, feature.endAt)}

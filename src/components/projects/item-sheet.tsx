@@ -5,12 +5,12 @@ import {
   SheetTitle,
   SheetDescription,
 } from "@/components/ui/sheet";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { CalendarIcon, UserIcon, HashIcon } from "lucide-react";
 import type { KanbanItemProps } from "./index";
 import type { Column } from "@/types/projects";
 import { formatDateParts } from "@/utils/dateFormat";
+import { ItemSheetAvatar } from "@/components/ui/user-avatar";
 
 type KanbanItemSheetProps = {
   item: KanbanItemProps | null;
@@ -78,33 +78,7 @@ export function KanbanItemSheet({
                   <span>Owner</span>
                 </div>
                 <div className="pl-6">
-                  {item.owner &&
-                  typeof item.owner === "object" &&
-                  "name" in item.owner ? (
-                    <div className="flex items-center gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage
-                          src={
-                            (item.owner as { image?: string }).image ??
-                            undefined
-                          }
-                        />
-                        <AvatarFallback className="text-xs">
-                          {((item.owner as { name?: string }).name ?? "").slice(
-                            0,
-                            2
-                          )}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span className="text-sm font-medium">
-                        {(item.owner as { name?: string }).name ?? ""}
-                      </span>
-                    </div>
-                  ) : (
-                    <span className="text-sm text-muted-foreground">
-                      No owner assigned
-                    </span>
-                  )}
+                  <ItemSheetAvatar owner={item.owner} />
                 </div>
               </div>
 
