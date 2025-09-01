@@ -11,6 +11,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export function CreateTask() {
   return (
@@ -42,6 +49,19 @@ export function CreateTask() {
                 name="task-description"
                 placeholder="Prepare the budget slides for the annual meeting."
               />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="task-status-1">Task Status</Label>
+              <Select name="task-status" defaultValue="1">
+                <SelectTrigger id="task-status-1">
+                  <SelectValue placeholder="Select a status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1">Planned</SelectItem>
+                  <SelectItem value="2">In Progress</SelectItem>
+                  <SelectItem value="3">Done</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="grid gap-3">
               <Label htmlFor="assignee-1">Assign to</Label>
