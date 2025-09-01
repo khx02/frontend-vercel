@@ -45,10 +45,10 @@ class ApiClient {
         ) {
           // Don't try to refresh on auth-related requests to avoid infinite loops
           if (
-            originalRequest.url?.includes("/api/auth/me") ||
-            originalRequest.url?.includes("/api/auth/set-token") ||
-            originalRequest.url?.includes("/api/auth/logout") ||
-            originalRequest.url?.includes("/api/auth/refresh_token")
+            originalRequest.url?.includes("/auth/me") ||
+            originalRequest.url?.includes("/auth/set-token") ||
+            originalRequest.url?.includes("/auth/logout") ||
+            originalRequest.url?.includes("/auth/refresh_token")
           ) {
             return Promise.reject(error);
           }
