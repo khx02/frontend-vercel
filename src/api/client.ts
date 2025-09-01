@@ -1,3 +1,4 @@
+import { authApi } from "./auth";
 import axios, {
   type AxiosInstance,
   type AxiosRequestConfig,
@@ -11,7 +12,7 @@ interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
   _retry?: boolean;
 }
 
-const API_BASE_URL = "http://localhost:8000";
+const API_BASE_URL = "http://localhost:8000/api";
 
 class ApiClient {
   private axiosInstance: AxiosInstance;
@@ -102,7 +103,7 @@ class ApiClient {
   private async refreshToken(): Promise<void> {
     try {
       // Call your refresh endpoint - using the correct endpoint
-      await this.axiosInstance.post("/api/auth/refresh_token");
+      await authApi.refresh();
     } catch (error) {
       // If refresh fails, clear any stored auth state
       throw error;
