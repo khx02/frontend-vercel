@@ -8,8 +8,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { CalendarIcon, UserIcon, HashIcon, Trash2Icon } from "lucide-react";
-import { useState } from "react";
+import {
+  CalendarIcon,
+  UserIcon,
+  HashIcon,
+  Trash2Icon,
+  CheckIcon,
+  XIcon,
+} from "lucide-react";
+import { useState, useEffect } from "react";
 import type { KanbanItemProps } from "./index";
 import type { Column, User } from "@/types/projects";
 import { formatDateParts } from "@/utils/dateFormat";
@@ -21,7 +28,7 @@ const EditableField = ({
   children,
   onClick,
   canEdit,
-  className = "cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded px-2 py-1 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20",
+  className = "cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded-lg px-2 py-1 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20",
 }: {
   children: React.ReactNode;
   onClick?: () => void;
@@ -64,6 +71,15 @@ export function KanbanItemSheet({
     endAt?: string;
     owner?: User;
   }>({});
+
+  // Reset editing state when sheet opens/closes
+  useEffect(() => {
+    if (!open) {
+      setEditingField(null);
+      setEditValues({});
+    }
+  }, [open]);
+
   const getColumnName = (columnId: string) => {
     const column = columns.find((col) => col.id === columnId);
     return column?.name || columnId;
@@ -80,9 +96,8 @@ export function KanbanItemSheet({
       item &&
       editValues[field as keyof typeof editValues] !== undefined
     ) {
-      onUpdate(item.id, {
-        [field]: editValues[field as keyof typeof editValues],
-      });
+      const value = editValues[field as keyof typeof editValues];
+      onUpdate(item.id, { [field]: value });
     }
     cancelEdit();
   };
@@ -100,11 +115,11 @@ export function KanbanItemSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md p-4">
+      <SheetContent className="w-full sm:max-w-md p-2">
         {item && (
           <div className="flex flex-col h-full">
             {/* Header */}
-            <SheetHeader className="border-b-2 p-6">
+            <SheetHeader className="border-b-4 p-4">
               <div className="space-y-4">
                 {/* Title Section */}
                 {editingField === "name" ? (
@@ -123,14 +138,14 @@ export function KanbanItemSheet({
                   <EditableField
                     canEdit={!!onUpdate}
                     onClick={() => startEdit("name", item.name)}
-                    className="text-2xl font-semibold leading-tight cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded px-2 py-1 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20"
+                    className="text-2xl font-semibold leading-tight cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded-lg px-2 py-1 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20"
                   >
                     {item.name}
                   </EditableField>
                 )}
 
                 {/* Status Section */}
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 text-base">
                   <span className="text-base text-muted-foreground">
                     Status:
                   </span>
@@ -139,7 +154,7 @@ export function KanbanItemSheet({
                       value={editValues.column || ""}
                       onValueChange={(value) => {
                         setEditValues({ column: value });
-                        setTimeout(() => saveEdit("column"), 100);
+                        setTimeout(() => saveEdit("column"), 1);
                       }}
                     >
                       <SelectTrigger className="w-32">
@@ -178,11 +193,13 @@ export function KanbanItemSheet({
                 <div className="pl-6">
                   {editingField === "owner" ? (
                     <Select
-                      value={editValues.owner?.id || ""}
+                      defaultValue={(item.owner as any)?.id || ""}
                       onValueChange={(value) => {
                         const selectedUser = users.find((u) => u.id === value);
-                        setEditValues({ owner: selectedUser });
-                        setTimeout(() => saveEdit("owner"), 100);
+                        if (selectedUser && onUpdate && item) {
+                          onUpdate(item.id, { owner: selectedUser });
+                        }
+                        cancelEdit();
                       }}
                     >
                       <SelectTrigger className="w-48">
@@ -222,56 +239,62 @@ export function KanbanItemSheet({
                 </div>
                 <div className="pl-6">
                   {editingField === "dates" ? (
-                    <div className="flex gap-2 items-center">
-                      <Input
-                        type="date"
-                        value={editValues.startAt || ""}
-                        onChange={(e) =>
-                          setEditValues({
-                            ...editValues,
-                            startAt: e.target.value,
-                          })
-                        }
-                        className="flex-1"
-                        onBlur={() => {
-                          if (onUpdate && item) {
-                            onUpdate(item.id, {
-                              startAt: editValues.startAt
-                                ? new Date(editValues.startAt)
-                                : undefined,
-                              endAt: editValues.endAt
-                                ? new Date(editValues.endAt)
-                                : undefined,
-                            });
+                    <div className="space-y-2">
+                      <div className="flex gap-2 items-center">
+                        <Input
+                          type="date"
+                          value={editValues.startAt || ""}
+                          onChange={(e) =>
+                            setEditValues({
+                              ...editValues,
+                              startAt: e.target.value,
+                            })
                           }
-                          cancelEdit();
-                        }}
-                      />
-                      <span className="text-muted-foreground">→</span>
-                      <Input
-                        type="date"
-                        value={editValues.endAt || ""}
-                        onChange={(e) =>
-                          setEditValues({
-                            ...editValues,
-                            endAt: e.target.value,
-                          })
-                        }
-                        className="flex-1"
-                        onBlur={() => {
-                          if (onUpdate && item) {
-                            onUpdate(item.id, {
-                              startAt: editValues.startAt
-                                ? new Date(editValues.startAt)
-                                : undefined,
-                              endAt: editValues.endAt
-                                ? new Date(editValues.endAt)
-                                : undefined,
-                            });
+                          className="flex-1 min-w-0"
+                        />
+                        <span className="text-muted-foreground px-2">→</span>
+                        <Input
+                          type="date"
+                          value={editValues.endAt || ""}
+                          onChange={(e) =>
+                            setEditValues({
+                              ...editValues,
+                              endAt: e.target.value,
+                            })
                           }
-                          cancelEdit();
-                        }}
-                      />
+                          className="flex-1 min-w-0"
+                        />
+                      </div>
+                      <div className="flex gap-2 justify-evenly p-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            if (onUpdate && item) {
+                              onUpdate(item.id, {
+                                startAt: editValues.startAt
+                                  ? new Date(editValues.startAt)
+                                  : undefined,
+                                endAt: editValues.endAt
+                                  ? new Date(editValues.endAt)
+                                  : undefined,
+                              });
+                            }
+                            cancelEdit();
+                          }}
+                          className="border-green-500 hover:bg-green-50 hover:text-green-700"
+                        >
+                          <CheckIcon className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={cancelEdit}
+                          className="border-red-500 hover:bg-red-50 hover:text-red-700"
+                        >
+                          <XIcon className="h-4 w-4 text-red-600" />
+                        </Button>
+                      </div>
                     </div>
                   ) : (
                     <EditableField
@@ -283,7 +306,7 @@ export function KanbanItemSheet({
                           endAt: formatDateForInput(item.endAt),
                         });
                       }}
-                      className="cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded px-2 py-1 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20 inline-block"
+                      className="cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded-lg px-2 py-1 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20 inline-block"
                     >
                       {(() => {
                         const { startDate, endDate, isValid } = formatDateParts(
@@ -311,14 +334,14 @@ export function KanbanItemSheet({
 
               {/* ID Section */}
               <div className="space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+                <div className="flex items-center gap-2 text-base font-medium text-foreground">
                   <HashIcon className="h-4 w-4 text-muted-foreground" />
                   <span>ID</span>
                 </div>
                 <div className="pl-6">
-                  <code className="px-2 py-1 text-xs bg-muted rounded font-mono">
+                  <div className="px-2 py-1 text-sm bg-muted rounded-md">
                     {item.id}
-                  </code>
+                  </div>
                 </div>
               </div>
             </div>
