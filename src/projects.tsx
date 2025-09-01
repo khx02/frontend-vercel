@@ -5,7 +5,7 @@ import { ListView } from "./components/projects/list-view";
 import { faker } from "@faker-js/faker";
 import type { Column, User, Feature } from "@/types/projects";
 import { CreateTask } from "./components/projects/create-task";
-import { KanbanItemSheet } from "@/components/projects/kanban-item-sheet";
+import { KanbanItemSheet } from "@/components/projects/item-sheet";
 import type { KanbanItemProps } from "@/components/projects";
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1);
