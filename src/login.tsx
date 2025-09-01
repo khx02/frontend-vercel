@@ -21,6 +21,9 @@ import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
+import { useDispatch } from "react-redux";
+import { type AppDispatch } from "./lib/store";
+import { fetchTeams } from "./features/teams/teamSlice";
 
 const logInFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -29,6 +32,7 @@ const logInFormSchema = z.object({
 
 export function LogIn() {
   const { login, isLoading } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -41,8 +45,11 @@ export function LogIn() {
 
     try {
       await login(values.email, values.password);
-      // Redirect to dashboard
-      navigate("/dashboard");
+      const teams = await dispatch(fetchTeams()).unwrap();
+
+      // If user has teams, navigate to dashboard, otherwise prompt user to
+      // create/join a team.
+      teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
     }

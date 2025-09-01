@@ -8,6 +8,8 @@ import { LogIn } from "@/login";
 import { SignUp } from "@/signup";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AuthProvider } from "./contexts/AuthContext";
+import { JoinCreateTeam } from "./JoinCreateTeam";
+import { ManageTeams } from "./ManageTeams";
 
 function App() {
 
@@ -18,6 +20,15 @@ function App() {
           {/* Public Routes - TODO: Redirect to dashboard if already logged in */}
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />
+
+          <Route
+            path="/teams/join"
+            element={
+              <ProtectedRoute>
+                <JoinCreateTeam />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes - Needs to be authenticated */}
           <Route
@@ -33,6 +44,7 @@ function App() {
             <Route path="/events" element={<Events />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/settings" element={<Settings />} />
+            <Route path="/teams" element={<ManageTeams />} />
           </Route>
         </Routes>
       </AuthProvider>

@@ -8,6 +8,9 @@ import { Input } from "./components/ui/input";
 import { Link, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
+import { useDispatch } from "react-redux";
+import { type AppDispatch } from "./lib/store";
+import { fetchTeams } from "./features/teams/teamSlice";
 
 
 const signUpFormSchema = z.object({
@@ -21,6 +24,7 @@ const signUpFormSchema = z.object({
 
 export function SignUp() {
   const { register, isLoading } = useAuth();
+  const dispatch = useDispatch<AppDispatch>();
   const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
@@ -33,8 +37,12 @@ export function SignUp() {
 
     try {
       await register(values.email, values.password, values.passwordConfirmation);
+      await dispatch(fetchTeams()).unwrap();
+      const teams = await dispatch(fetchTeams()).unwrap();
 
-      navigate('/dashboard');
+      // If user has teams, navigate to dashboard, otherwise prompt user to
+      // create/join a team.
+      teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     }
