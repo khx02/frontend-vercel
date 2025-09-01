@@ -2,6 +2,7 @@ import type {
   AuthResponse,
   RefreshTokenPayload,
   RegisterPayload,
+  User,
 } from "@/types/auth";
 import { apiClient } from "./client";
 
@@ -16,7 +17,7 @@ export const authApi = {
 
   login: async (data: FormData): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
-      "/auth/token",
+      "/auth/set-token",
       data
     );
     return response.data;
@@ -37,4 +38,9 @@ export const authApi = {
   refresh: async (): Promise<void> => {
     await apiClient.post("/auth/refresh_token");
   },
+
+  me: async (): Promise<User> => {
+    const response = await apiClient.get<User>("/auth/me");
+    return response.data;
+  }
 };

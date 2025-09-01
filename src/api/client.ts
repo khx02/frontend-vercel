@@ -28,6 +28,12 @@ class ApiClient {
       withCredentials: true,
     });
 
+    this.axiosInstance.interceptors.request.use((config) => {
+      console.log("Base URL:", config.baseURL);
+      console.log("Relative URL:", config.url);
+      return config;
+    });
+
     this.setupInterceptors();
   }
 
