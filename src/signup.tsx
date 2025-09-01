@@ -37,12 +37,14 @@ export function SignUp() {
 
     try {
       await register(values.email, values.password, values.passwordConfirmation);
-      await dispatch(fetchTeams()).unwrap();
-      const teams = await dispatch(fetchTeams()).unwrap();
+      // await dispatch(fetchTeams()).unwrap();
+      // const teams = await dispatch(fetchTeams()).unwrap();
 
+      // TODO: THIS WILL MIGRATE TO OTP PAGE
       // If user has teams, navigate to dashboard, otherwise prompt user to
       // create/join a team.
-      teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
+      // teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
+      navigate(`/email-verify/${values.email}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     }
