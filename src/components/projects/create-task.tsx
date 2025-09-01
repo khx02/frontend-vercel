@@ -63,6 +63,7 @@ export function CreateTask() {
                 </SelectContent>
               </Select>
             </div>
+            // TODO: auto suggest when assigning
             <div className="grid gap-3">
               <Label htmlFor="assignee-1">Assign to</Label>
               <Input id="assignee-1" name="assignee" placeholder="John Doe" />
