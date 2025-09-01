@@ -1,5 +1,11 @@
-import axios, { type AxiosInstance, type AxiosRequestConfig, type AxiosResponse, type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { authApi } from "./auth";
+import axios, {
+  type AxiosInstance,
+  type AxiosRequestConfig,
+  type AxiosResponse,
+  type AxiosError,
+  type InternalAxiosRequestConfig,
+} from "axios";
 
 // Extend the Axios request config to include our custom _retry property
 interface ExtendedAxiosRequestConfig extends InternalAxiosRequestConfig {
@@ -32,9 +38,18 @@ class ApiClient {
       async (error: AxiosError) => {
         const originalRequest = error.config as ExtendedAxiosRequestConfig;
 
-        if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
-          // Don't try to refresh on /auth/me requests to avoid infinite loops
-          if (originalRequest.url?.includes('/auth/me')) {
+        if (
+          error.response?.status === 401 &&
+          originalRequest &&
+          !originalRequest._retry
+        ) {
+          // Don't try to refresh on auth-related requests to avoid infinite loops
+          if (
+            originalRequest.url?.includes("/api/auth/me") ||
+            originalRequest.url?.includes("/api/auth/set-token") ||
+            originalRequest.url?.includes("/api/auth/logout") ||
+            originalRequest.url?.includes("/api/auth/refresh_token")
+          ) {
             return Promise.reject(error);
           }
 
@@ -42,11 +57,13 @@ class ApiClient {
             // If already refreshing, queue the request
             return new Promise((resolve, reject) => {
               this.failedQueue.push({ resolve, reject });
-            }).then(() => {
-              return this.axiosInstance(originalRequest);
-            }).catch(err => {
-              return Promise.reject(err);
-            });
+            })
+              .then(() => {
+                return this.axiosInstance(originalRequest);
+              })
+              .catch((err) => {
+                return Promise.reject(err);
+              });
           }
 
           originalRequest._retry = true;
@@ -59,7 +76,7 @@ class ApiClient {
           } catch (refreshError) {
             this.processQueue(refreshError);
             // Redirect to login or handle auth failure
-            window.location.href = '/login';
+            window.location.href = "/login";
             return Promise.reject(refreshError);
           } finally {
             this.isRefreshing = false;
@@ -99,12 +116,14 @@ class ApiClient {
       await this.refreshToken();
       return true;
     } catch (error) {
-      console.error('Token refresh failed on route change:', error);
+      console.error("Token refresh failed on route change:", error);
       return false;
     }
   }
 
-  private async request<T = unknown>(config: AxiosRequestConfig): Promise<AxiosResponse<T>> {
+  private async request<T = unknown>(
+    config: AxiosRequestConfig
+  ): Promise<AxiosResponse<T>> {
     return this.axiosInstance.request<T>(config);
   }
 
