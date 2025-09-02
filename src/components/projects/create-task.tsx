@@ -74,7 +74,7 @@ export function CreateTask({
         <form onSubmit={handleSubmit}>
           <DialogHeader>
             <DialogTitle>New Task</DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="mb-4 px-1">
               Fill in the details for the new task.
             </DialogDescription>
           </DialogHeader>

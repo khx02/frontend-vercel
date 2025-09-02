@@ -299,11 +299,22 @@ export default function Projects() {
     }
   };
 
-  const handleDeleteItem = (itemId: string) => {
-    setFeatures((prevFeatures) =>
-      prevFeatures.filter((feature) => feature.id !== itemId)
-    );
-    setSelectedItem(null);
+  const handleDeleteItem = async (itemId: string) => {
+    if (!project) return;
+    
+    try {
+      // Call backend API to delete the todo item
+      await projectsApi.deleteTodo(project.id, itemId);
+      
+      // Update UI state after successful backend deletion
+      setFeatures((prevFeatures) =>
+        prevFeatures.filter((feature) => feature.id !== itemId)
+      );
+      setSelectedItem(null);
+    } catch (err) {
+      console.log(err instanceof Error ? err.message : "Failed to delete item");
+      // Optionally show an error message to the user
+    }
   };
 
   const handleUpdateItem = (
