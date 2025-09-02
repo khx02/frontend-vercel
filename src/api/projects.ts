@@ -130,4 +130,20 @@ export const projectsApi = {
     );
     return response.data;
   },
+
+  // Create a new project
+  async createProject(
+    teamId: string,
+    name: string,
+    description?: string
+  ): Promise<ProjectResponse> {
+    const response = await apiClient.post<ProjectResponse>(
+      `/teams/create-project/${teamId}`,
+      {
+        name,
+        description,
+      }
+    );
+    return response.data;
+  },
 };

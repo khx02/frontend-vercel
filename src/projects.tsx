@@ -10,6 +10,15 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 import type {
   Column,
   User,
@@ -33,7 +42,9 @@ export default function Projects() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStage, setLoadingStage] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectDescription, setNewProjectDescription] = useState("");
 
   const loadingStages = [
     "Fetching user teams...",
@@ -106,7 +117,7 @@ export default function Projects() {
         setFeatures(convertedFeatures);
       }
     } catch (err) {
-      setError(
+      console.log(
         err instanceof Error ? err.message : "Failed to load project data"
       );
       throw err;
@@ -147,7 +158,6 @@ export default function Projects() {
       try {
         setLoading(true);
         setLoadingStage(0); // Fetching user teams
-        setError(null);
 
         // Get current user teams to find project IDs
         const teamsResponse = await projectsApi.getCurrentUserTeams();
@@ -197,7 +207,7 @@ export default function Projects() {
           throw new Error("No valid projects could be loaded");
         }
       } catch (err) {
-        setError(
+        console.log(
           err instanceof Error ? err.message : "Failed to fetch project data"
         );
       } finally {
@@ -216,7 +226,74 @@ export default function Projects() {
       setLoadingStage(3); // Loading project details
       await loadProjectData(projectId);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load project");
+      console.log(
+        err instanceof Error ? err.message : "Failed to load project"
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle creating a new project
+  const handleCreateProject = async () => {
+    if (teams.length === 0) {
+      console.log("No team available to create project");
+      return;
+    }
+
+    if (!newProjectName.trim()) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      setLoadingStage(1); // Creating project
+
+      const teamId = teams[0].id; // Use the first team
+      const response = await projectsApi.createProject(
+        teamId,
+        newProjectName.trim(),
+        newProjectDescription.trim() || undefined
+      );
+
+      if (response.project) {
+        // Refresh the available projects list
+        const updatedTeamsResponse = await projectsApi.getCurrentUserTeams();
+        if (updatedTeamsResponse.teams.length > 0) {
+          const allProjectIds = updatedTeamsResponse.teams.flatMap(
+            (team) => team.project_ids
+          );
+
+          const projectPromises = allProjectIds.map(async (projectId) => {
+            try {
+              const response = await projectsApi.getProject(projectId);
+              return response;
+            } catch (err) {
+              return null;
+            }
+          });
+
+          const projectResponses = await Promise.all(projectPromises);
+          const validProjects = projectResponses
+            .filter((response) => response && response.project)
+            .map((response) => response!.project);
+
+          setAvailableProjects(validProjects);
+
+          // Auto-select the newly created project
+          setSelectedProjectId(response.project.id);
+          await loadProjectData(response.project.id);
+        }
+
+        // Reset form and close dialog
+        setNewProjectName("");
+        setNewProjectDescription("");
+        setIsCreateDialogOpen(false);
+      }
+    } catch (err) {
+      console.log(
+        err instanceof Error ? err.message : "Failed to create project"
+      );
     } finally {
       setLoading(false);
     }
@@ -250,66 +327,107 @@ export default function Projects() {
         <ProgressLoading stages={loadingStages} currentStage={loadingStage} />
       ) : (
         <>
-          {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="text-sm text-red-600">Warning: {error}</div>
-              <div className="text-xs text-red-500 mt-1">
-                Using fallback data below
-              </div>
-            </div>
-          )}
-
           <div className="flex items-start justify-between mb-4 py-2">
             <div className="flex-1">
-              {availableProjects.length > 1 ? (
-                <div className="space-y-2">
-                  <div className="text-sm font-medium text-muted-foreground mb-2">
-                    Select Project
-                  </div>
-                  <div className="justify-start">
-                    <Select
-                      value={selectedProjectId || ""}
-                      onValueChange={handleProjectChange}
-                    >
-                      <SelectTrigger className="flex-auto text-left px-2 space-x-2">
-                        <SelectValue placeholder="Create a Project" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {availableProjects.map((proj) => (
-                          <SelectItem key={proj.id} value={proj.id}>
-                            <div className="flex items-center gap-2">
-                              <div className="font-medium">{proj.name}</div>
-                              {proj.description && (
-                                <div className="text-xs text-muted-foreground">
-                                  {proj.description}
-                                </div>
-                              )}
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {teams.length > 0 && (
-                    <p className="text-xs text-muted-foreground">
-                      Team: {teams[0].name} • {availableProjects.length}{" "}
-                      project(s)
-                    </p>
-                  )}
+              <div className="space-y-2">
+                <div className="text-sm font-medium text-muted-foreground mb-2">
+                  Select Project
                 </div>
-              ) : (
-                <div>
-                  <h1 className="text-3xl font-bold">
-                    {project?.name || "Projects"}
-                  </h1>
-                  {teams.length > 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Team: {teams[0].name} • {availableProjects.length}{" "}
-                      project(s)
-                    </p>
-                  )}
+                <div className="flex items-center gap-2">
+                  <Select
+                    value={selectedProjectId || ""}
+                    onValueChange={handleProjectChange}
+                  >
+                    <SelectTrigger className="flex-initial px-2 space-x-2">
+                      <SelectValue placeholder="Create a Project" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {availableProjects.map((proj) => (
+                        <SelectItem key={proj.id} value={proj.id}>
+                          <div className="flex items-center gap-2">
+                            <div className="font-medium">{proj.name}</div>
+                            {proj.description && (
+                              <div className="text-xs text-muted-foreground">
+                                {proj.description}
+                              </div>
+                            )}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <Dialog
+                    open={isCreateDialogOpen}
+                    onOpenChange={setIsCreateDialogOpen}
+                  >
+                    <DialogTrigger asChild>
+                      <Button size="sm" variant="outline" className="px-3">
+                        +
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader>
+                        <DialogTitle>Create New Project</DialogTitle>
+                      </DialogHeader>
+                      <div className="grid gap-4 py-4">
+                        <div className="grid grid-cols-1 items-center gap-4">
+                          <Label htmlFor="project-name" className="text-right">
+                            Project Name:
+                          </Label>
+                          <Input
+                            id="project-name"
+                            value={newProjectName}
+                            onChange={(e) => setNewProjectName(e.target.value)}
+                            className="col-span-3"
+                            placeholder="Enter project name"
+                          />
+                        </div>
+                        <div className="grid grid-cols-1 items-center gap-4">
+                          <Label
+                            htmlFor="project-description"
+                            className="text-right"
+                          >
+                            Project Description:
+                          </Label>
+                          <Input
+                            id="project-description"
+                            value={newProjectDescription}
+                            onChange={(e) =>
+                              setNewProjectDescription(e.target.value)
+                            }
+                            className="col-span-3"
+                            placeholder="Enter project description (optional)"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          onClick={() => {
+                            setNewProjectName("");
+                            setNewProjectDescription("");
+                            setIsCreateDialogOpen(false);
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleCreateProject}
+                          disabled={!newProjectName.trim()}
+                        >
+                          Create Project
+                        </Button>
+                      </div>
+                    </DialogContent>
+                  </Dialog>
                 </div>
-              )}
+                {teams.length > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Team: {teams[0].name} • {availableProjects.length}{" "}
+                    project(s)
+                  </p>
+                )}
+              </div>
             </div>
             <div className="flex flex-col items-end space-y-2">
               <CreateTask
