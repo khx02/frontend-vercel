@@ -1,6 +1,6 @@
 import { Kanban } from "@/components/projects/kanban";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { ListView } from "./components/projects/list-view";
 import {
   Select,
@@ -36,9 +36,6 @@ export default function Projects() {
     null
   );
   const [view, setView] = useState<"kanban" | "list">("kanban");
-
-  // Create a ref to track the previous features state
-  const prevFeaturesRef = useRef<Feature[]>([]);
 
   // Function to load specific project data
   const loadProjectData = async (projectId: string) => {
@@ -200,49 +197,6 @@ export default function Projects() {
     }
   };
 
-  // Use effect to track changes in features and detect column moves
-  useEffect(() => {
-    // Skip first render and if there are no previous features
-    if (prevFeaturesRef.current.length === 0) {
-      prevFeaturesRef.current = features.map((f) => ({ ...f })); // Deep copy
-      return;
-    }
-
-    // Find any feature that changed columns
-    const movedFeature = features.find((newFeature) => {
-      const oldFeature = prevFeaturesRef.current.find(
-        (old) => old.id === newFeature.id
-      );
-      return oldFeature && oldFeature.column !== newFeature.column;
-    });
-
-    if (movedFeature && project) {
-      // Update the todo item status in the backend
-      projectsApi
-        .updateTodo(project.id, {
-          id: movedFeature.id,
-          name: movedFeature.name,
-          description: movedFeature.name, // Using name as description fallback
-          status_id: movedFeature.column,
-          owner_id: movedFeature.owner.id,
-        })
-        .catch((err) => {
-          console.error("Failed to update todo status in backend:", err);
-        });
-    }
-
-    // Update the ref with current features (deep copy to avoid reference issues)
-    prevFeaturesRef.current = features.map((f) => ({ ...f }));
-  }, [features, project]);
-
-  const handleKanbanChange = (value: React.SetStateAction<Feature[]>) => {
-    // Handle both direct values and function updates
-    const newFeatures = typeof value === "function" ? value(features) : value;
-
-    // Update the UI immediately
-    setFeatures(newFeatures);
-  };
-
   const handleDeleteItem = (itemId: string) => {
     setFeatures((prevFeatures) =>
       prevFeatures.filter((feature) => feature.id !== itemId)
@@ -359,7 +313,8 @@ export default function Projects() {
             <Kanban
               columns={columns}
               features={features}
-              setFeatures={handleKanbanChange}
+              project={project}
+              onFeaturesChange={setFeatures}
               onSelect={setSelectedItem}
             />
           ) : (
