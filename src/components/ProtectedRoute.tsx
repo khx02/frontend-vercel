@@ -1,19 +1,17 @@
 import { useAuth } from "@/contexts/AuthContext";
 import type { ReactNode } from "react";
 import { Navigate } from "react-router";
-import Loading from "@/components/Loading";
+import { ProgressLoading } from "@/components/ProgressLoading";
 
 interface ProtectedRouteProps {
   children: ReactNode;
 }
 
-export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
-  children,
-}) => {
+export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
   if (isLoading) {
-    return <Loading />
+    return <ProgressLoading message="Checking authentication..." />;
   }
 
   if (!isAuthenticated) {
@@ -21,4 +19,4 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   }
 
   return <>{children}</>;
-}
+};

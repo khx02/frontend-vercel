@@ -2,7 +2,7 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router";
 import { Layout } from "@/layout";
 import { Dashboard } from "@/dashboard";
 import { Settings } from "@/settings";
-import { Projects } from "@/projects";
+import Projects from "@/projects";
 import { Events } from "@/events";
 import { LogIn } from "@/login";
 import { SignUp } from "@/signup";
@@ -12,7 +12,6 @@ import { JoinCreateTeam } from "./JoinCreateTeam";
 import { ManageTeams } from "./ManageTeams";
 
 function App() {
-
   return (
     <BrowserRouter>
       <AuthProvider>
@@ -49,7 +48,7 @@ function App() {
         </Routes>
       </AuthProvider>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
