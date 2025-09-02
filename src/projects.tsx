@@ -1,5 +1,4 @@
 import { Kanban } from "@/components/projects/kanban";
-import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { ListView } from "./components/projects/list-view";
 import {
@@ -9,6 +8,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 import type {
   Column,
   User,
@@ -316,19 +317,22 @@ export default function Projects() {
             />
           </div>
 
-          <div className="mb-4 flex gap-2">
-            <Button
-              variant={view === "kanban" ? "default" : "outline"}
-              onClick={() => setView("kanban")}
-            >
-              Kanban View
-            </Button>
-            <Button
-              variant={view === "list" ? "default" : "outline"}
-              onClick={() => setView("list")}
-            >
-              List View
-            </Button>
+          <div className="mb-4 flex items-center space-x-4">
+            <div className="flex items-center space-x-2">
+              <Label htmlFor="view-switch" className="text-sm font-medium">
+                Kanban
+              </Label>
+              <Switch
+                id="view-switch"
+                checked={view === "list"}
+                onCheckedChange={(checked) =>
+                  setView(checked ? "list" : "kanban")
+                }
+              />
+              <Label htmlFor="view-switch" className="text-sm font-medium">
+                List
+              </Label>
+            </div>
           </div>
 
           {view === "kanban" ? (
