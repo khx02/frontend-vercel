@@ -72,10 +72,27 @@ export const projectsApi = {
   },
 
   // Update a todo item
-  async updateTodo(projectId: string, todoData: Partial<ToDoItem>) {
+  async updateTodo(
+    projectId: string,
+    todoData: {
+      id: string;
+      name: string;
+      description: string;
+      status_id: string;
+      owner_id: string;
+    }
+  ) {
+    const requestData = {
+      todo_id: todoData.id,
+      name: todoData.name,
+      description: todoData.description,
+      status_id: todoData.status_id,
+      owner_id: todoData.owner_id,
+    };
+
     const response = await apiClient.post(
       `/projects/update-todo/${projectId}`,
-      todoData
+      requestData
     );
     return response.data;
   },
@@ -86,17 +103,6 @@ export const projectsApi = {
       `/projects/delete-todo/${projectId}`,
       {
         data: { todo_id: todoId },
-      }
-    );
-    return response.data;
-  },
-
-  // Reorder todo items
-  async reorderTodoItems(projectId: string, orderedIds: string[]) {
-    const response = await apiClient.post(
-      `/projects/reorder-todo-items/${projectId}`,
-      {
-        ordered_ids: orderedIds,
       }
     );
     return response.data;
@@ -120,17 +126,6 @@ export const projectsApi = {
       `/projects/delete-todo-status/${projectId}`,
       {
         data: { status_id: statusId },
-      }
-    );
-    return response.data;
-  },
-
-  // Reorder todo statuses
-  async reorderTodoStatuses(projectId: string, orderedIds: string[]) {
-    const response = await apiClient.post(
-      `/projects/reorder-todo-statuses/${projectId}`,
-      {
-        ordered_ids: orderedIds,
       }
     );
     return response.data;
