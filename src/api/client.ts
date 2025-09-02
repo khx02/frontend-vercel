@@ -48,7 +48,7 @@ class ApiClient {
             originalRequest.url?.includes("/auth/me") ||
             originalRequest.url?.includes("/auth/set-token") ||
             originalRequest.url?.includes("/auth/logout") ||
-            originalRequest.url?.includes("/auth/refresh_token")
+            originalRequest.url?.includes("/auth/refresh-token")
           ) {
             return Promise.reject(error);
           }

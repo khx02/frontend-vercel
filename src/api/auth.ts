@@ -1,5 +1,6 @@
 import type {
   AuthResponse,
+  EmailVerifyPayload,
   RefreshTokenPayload,
   RegisterPayload,
   User,
@@ -13,6 +14,14 @@ export const authApi = {
       data
     );
     return response.data;
+  },
+
+  verifyCode: async (data: EmailVerifyPayload): Promise<User> => {
+    const response = await apiClient.post<User>(
+      "/users/verify-code",
+      data
+    );
+    return response.data
   },
 
   login: async (data: FormData): Promise<AuthResponse> => {
@@ -29,14 +38,14 @@ export const authApi = {
 
   refreshToken: async (data: RefreshTokenPayload): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
-      "/auth/refresh_token",
+      "/auth/refresh-token",
       data
     );
     return response.data;
   },
 
   refresh: async (): Promise<void> => {
-    await apiClient.post("/auth/refresh_token");
+    await apiClient.post("/auth/refresh-token");
   },
 
   me: async (): Promise<User> => {

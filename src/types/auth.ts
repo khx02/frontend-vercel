@@ -12,6 +12,7 @@ export interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   register: (email: string, password: string, passwordConfirm: string) => Promise<void>;
+  verifyEmailAndLogin: (email: string, password: string, code: string) => Promise<void>;
 }
 
 export interface TokenPayload {
@@ -43,4 +44,9 @@ export interface ValidateTokenRes {
 
 export interface RefreshTokenPayload {
   token: string;
+}
+
+export interface EmailVerifyPayload {
+  email: string;
+  verification_code: string;
 }

@@ -21,7 +21,7 @@ function App() {
           {/* Public Routes - TODO: Redirect to dashboard if already logged in */}
           <Route path="/login" element={<LogIn />} />
           <Route path="/signup" element={<SignUp />} />
-          <Route path="/email-verify/:email" element={<EmailVerification />} />
+          <Route path="/email-verify" element={<EmailVerification />} />
 
           <Route
             path="/teams/join"

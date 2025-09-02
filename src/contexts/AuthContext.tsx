@@ -79,7 +79,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       // const form = _form_helper(email, password);
       // await authApi.login(form);
 
-      await fetchMe();
+      // await fetchMe();
     } catch (error) {
       setUser(null);
       throw error;
@@ -98,6 +98,29 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
+  const verifyEmailAndLogin = async (email: string, password: string, code: string) => {
+    try {
+      setIsLoading(true);
+      const user = await authApi.verifyCode({
+        email: email,
+        verification_code: code,
+      });
+
+      if (!user) {
+        throw new Error("Failed to validate email");
+      }
+
+      const form = _form_helper(email, password);
+      await authApi.login(form);
+
+      await fetchMe();
+    } catch (error) {
+      throw error;
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
   const value: AuthContextType = {
     user,
     isLoading,
@@ -105,6 +128,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     register,
+    verifyEmailAndLogin,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

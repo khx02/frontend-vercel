@@ -18,7 +18,7 @@ export function JoinCreateTeam() {
     navigate('/dashboard');
   }
 
-  const onCreate = async () => navigate('dashboard');
+  const onCreate = async () => navigate('/dashboard');
 
   return (
     <div className="min-h-screen bg-background flex flex-col justify-center items-center gap-10">

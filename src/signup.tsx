@@ -5,13 +5,11 @@ import { Card, CardAction, CardContent, CardDescription, CardHeader, CardTitle }
 import { Button } from "./components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "./components/ui/form";
 import { Input } from "./components/ui/input";
-import { Link, useNavigate } from "react-router";
+import { Link, Navigate, useNavigate } from "react-router";
 import { useState } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import { useDispatch } from "react-redux";
 import { type AppDispatch } from "./lib/store";
-import { fetchTeams } from "./features/teams/teamSlice";
-
 
 const signUpFormSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -44,7 +42,15 @@ export function SignUp() {
       // If user has teams, navigate to dashboard, otherwise prompt user to
       // create/join a team.
       // teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
-      navigate(`/email-verify/${values.email}`);
+
+      // navigate(`/email-verify/${values.email}`);
+      // Passes 
+      navigate("/email-verify", {
+        state: {
+          email: values.email,
+          password: values.password,
+        },
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong');
     }
