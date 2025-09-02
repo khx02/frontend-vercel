@@ -245,7 +245,7 @@ export default function Projects() {
   };
 
   return (
-    <div className="min-h-screen bg-background p-8">
+    <div className="min-h-screen bg-background p-8 py-2">
       {loading ? (
         <ProgressLoading stages={loadingStages} currentStage={loadingStage} />
       ) : (
@@ -259,35 +259,37 @@ export default function Projects() {
             </div>
           )}
 
-          <div className="flex items-center justify-between mb-8">
+          <div className="flex items-start justify-between mb-4 py-2">
             <div className="flex-1">
               {availableProjects.length > 1 ? (
                 <div className="space-y-2">
-                  <label className="text-sm font-medium text-muted-foreground">
+                  <div className="text-sm font-medium text-muted-foreground mb-2">
                     Select Project
-                  </label>
-                  <Select
-                    value={selectedProjectId || ""}
-                    onValueChange={handleProjectChange}
-                  >
-                    <SelectTrigger className="w-80">
-                      <SelectValue placeholder="Select a project" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {availableProjects.map((proj) => (
-                        <SelectItem key={proj.id} value={proj.id}>
-                          <div>
-                            <div className="font-medium">{proj.name}</div>
-                            {proj.description && (
-                              <div className="text-xs text-muted-foreground">
-                                {proj.description}
-                              </div>
-                            )}
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  </div>
+                  <div className="justify-start">
+                    <Select
+                      value={selectedProjectId || ""}
+                      onValueChange={handleProjectChange}
+                    >
+                      <SelectTrigger className="flex-auto text-left px-2 space-x-2">
+                        <SelectValue placeholder="Create a Project" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {availableProjects.map((proj) => (
+                          <SelectItem key={proj.id} value={proj.id}>
+                            <div className="flex items-center gap-2">
+                              <div className="font-medium">{proj.name}</div>
+                              {proj.description && (
+                                <div className="text-xs text-muted-foreground">
+                                  {proj.description}
+                                </div>
+                              )}
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                   {teams.length > 0 && (
                     <p className="text-xs text-muted-foreground">
                       Team: {teams[0].name} • {availableProjects.length}{" "}
@@ -309,29 +311,28 @@ export default function Projects() {
                 </div>
               )}
             </div>
-            <CreateTask
-              project={project}
-              statuses={columns.map((c) => ({ id: c.id, name: c.name }))}
-              users={users}
-              onCreated={() => loadProjectData(selectedProjectId || "")}
-            />
-          </div>
-
-          <div className="mb-4 flex items-center space-x-4">
-            <div className="flex items-center space-x-2">
-              <Label htmlFor="view-switch" className="text-sm font-medium">
-                Kanban
-              </Label>
-              <Switch
-                id="view-switch"
-                checked={view === "list"}
-                onCheckedChange={(checked) =>
-                  setView(checked ? "list" : "kanban")
-                }
+            <div className="flex flex-col items-end space-y-2">
+              <CreateTask
+                project={project}
+                statuses={columns.map((c) => ({ id: c.id, name: c.name }))}
+                users={users}
+                onCreated={() => loadProjectData(selectedProjectId || "")}
               />
-              <Label htmlFor="view-switch" className="text-sm font-medium">
-                List
-              </Label>
+              <div className="flex items-center space-x-2 mt-4">
+                <Label htmlFor="view-switch" className="text-sm font-medium">
+                  Kanban
+                </Label>
+                <Switch
+                  id="view-switch"
+                  checked={view === "list"}
+                  onCheckedChange={(checked) =>
+                    setView(checked ? "list" : "kanban")
+                  }
+                />
+                <Label htmlFor="view-switch" className="text-sm font-medium">
+                  List
+                </Label>
+              </div>
             </div>
           </div>
 
