@@ -21,6 +21,7 @@ import { CreateTask } from "./components/projects/create-task";
 import { KanbanItemSheet } from "@/components/projects/item-sheet";
 import type { KanbanItemProps } from "@/components/projects";
 import { projectsApi } from "@/api/projects";
+import { ProgressLoading } from "@/components/ProgressLoading";
 
 export default function Projects() {
   const [teams, setTeams] = useState<Team[]>([]);
@@ -30,7 +31,17 @@ export default function Projects() {
   const [columns, setColumns] = useState<Column[]>([]);
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadingStage, setLoadingStage] = useState(0);
   const [error, setError] = useState<string | null>(null);
+
+  const loadingStages = [
+    "Fetching user teams...",
+    "Loading available projects...",
+    "Setting up project data...",
+    "Loading project details...",
+    "Fetching todo items...",
+    "Preparing workspace...",
+  ];
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
   const [selectedItem, setSelectedItem] = useState<KanbanItemProps | null>(
     null
@@ -40,11 +51,18 @@ export default function Projects() {
   // Function to load specific project data
   const loadProjectData = async (projectId: string) => {
     try {
+      setLoadingStage(3); // Loading project details
+
       // Fetch project details and todo items in parallel
       const [projectResponse, todoItemsResponse] = await Promise.all([
         projectsApi.getProject(projectId),
-        projectsApi.getTodoItems(projectId),
+        (async () => {
+          setLoadingStage(4); // Fetching todo items
+          return await projectsApi.getTodoItems(projectId);
+        })(),
       ]);
+
+      setLoadingStage(5); // Preparing workspace
 
       if (projectResponse.project) {
         setProject(projectResponse.project);
@@ -127,6 +145,7 @@ export default function Projects() {
     const fetchTeamsAndProjects = async () => {
       try {
         setLoading(true);
+        setLoadingStage(0); // Fetching user teams
         setError(null);
 
         // Get current user teams to find project IDs
@@ -136,9 +155,13 @@ export default function Projects() {
         }
         setTeams(teamsResponse.teams);
 
+        setLoadingStage(1); // Loading available projects
+
         if (teamsResponse.teams.length === 0) {
           throw new Error("No teams found for current user");
         }
+
+        setLoadingStage(2); // Setting up project data
 
         // Collect all project IDs from all teams
         const allProjectIds = teamsResponse.teams.flatMap(
@@ -189,6 +212,7 @@ export default function Projects() {
     try {
       setSelectedProjectId(projectId);
       setLoading(true);
+      setLoadingStage(3); // Loading project details
       await loadProjectData(projectId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load project");
@@ -222,9 +246,7 @@ export default function Projects() {
   return (
     <div className="min-h-screen bg-background p-8">
       {loading ? (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-lg">Loading project data...</div>
-        </div>
+        <ProgressLoading stages={loadingStages} currentStage={loadingStage} />
       ) : (
         <>
           {error && (
