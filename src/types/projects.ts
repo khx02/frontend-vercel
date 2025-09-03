@@ -1,17 +1,35 @@
+export interface TodoStatus {
+  id: string;
+  name: string;
+}
+
 export interface Project {
-    id: string;
-    name: string;
-    description: string | null;
-    todo_statuses: string;
-    todo_ids: string;
+  id: string;
+  name: string;
+  description: string | null;
+  todo_statuses: TodoStatus[];
+  todo_ids: string[];
 }
 
 export interface ToDoItem {
-    id: string;
-    name: string;
-    description: string;
-    status_id: string;
-    owner_id: string;
+  id: string;
+  name: string;
+  description: string;
+  status_id: string;
+  owner_id: string;
+}
+
+export interface Team {
+  id: string;
+  name: string;
+  member_ids: string[];
+  exec_member_ids: string[];
+  project_ids: string[];
+  event_ids: string[];
+}
+
+export interface UserTeamsResponse {
+  teams: Team[];
 }
 
 // Kanban view types
