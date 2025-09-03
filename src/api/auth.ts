@@ -1,7 +1,9 @@
 import type {
   AuthResponse,
+  EmailVerifyPayload,
   RefreshTokenPayload,
   RegisterPayload,
+  User,
 } from "@/types/auth";
 import { apiClient } from "./client";
 
@@ -14,8 +16,19 @@ export const authApi = {
     return response.data;
   },
 
+  verifyCode: async (data: EmailVerifyPayload): Promise<User> => {
+    const response = await apiClient.post<User>(
+      "/users/verify-code",
+      data
+    );
+    return response.data
+  },
+
   login: async (data: FormData): Promise<AuthResponse> => {
-    const response = await apiClient.post<AuthResponse>("/auth/token", data);
+    const response = await apiClient.post<AuthResponse>(
+      "/auth/set-token",
+      data
+    );
     return response.data;
   },
 
@@ -25,13 +38,18 @@ export const authApi = {
 
   refreshToken: async (data: RefreshTokenPayload): Promise<AuthResponse> => {
     const response = await apiClient.post<AuthResponse>(
-      "/auth/refresh_token",
+      "/auth/refresh-token",
       data
     );
     return response.data;
   },
 
   refresh: async (): Promise<void> => {
-    await apiClient.post("/auth/refresh_token");
+    await apiClient.post("/auth/refresh-token");
   },
+
+  me: async (): Promise<User> => {
+    const response = await apiClient.get<User>("/auth/me");
+    return response.data;
+  }
 };
