@@ -1,11 +1,12 @@
 import { useSelector } from "react-redux";
 import { useAppDispatch } from "./hooks/redux";
 import type { RootState } from "./lib/store";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { fetchTeams, removeTeam } from "./features/teams/teamSlice";
 import { CreateTeam } from "./components/team/CreateTeam";
 import { JoinTeam } from "./components/team/JoinTeam";
 import { LeaveTeamDialog } from "./components/team/LeaveTeamDialog";
+import { extractErrorMessage } from "./utils/errorHandling";
 
 export function ManageTeams() {
   const dispatch = useAppDispatch();
@@ -15,8 +16,14 @@ export function ManageTeams() {
     dispatch(fetchTeams());
   }, [dispatch]);
 
-  const handleLeaveGroup = (teamId: string) => {
-    dispatch(removeTeam(teamId));
+  const handleLeaveGroup = async (teamId: string) => {
+    try {
+      await dispatch(removeTeam(teamId)).unwrap();
+    } catch (error) {
+      console.log("Manage Teams Error:", error);
+      const errMsg = typeof error === "string" ? error : extractErrorMessage(error);
+      throw new Error(errMsg);
+    }
   }
 
   return (

@@ -6,16 +6,18 @@ import { useState } from "react";
 
 export interface LeaveTeamDialogProps {
   team: TeamModel,
-  onLeave: (teamId: string) => void;
+  onLeave: (teamId: string) => Promise<void>;
 }
 
 export function LeaveTeamDialog({ team, onLeave }: LeaveTeamDialogProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleLeave = () => {
+  const handleLeave = async () => {
+    setError(null);
+
     try {
-      onLeave(team.id);
+      await onLeave(team.id);
       setIsOpen(false);
     } catch (error) {
       const errMsg = error instanceof Error ? error.message : "Error leaving group, try again";
@@ -44,7 +46,9 @@ export function LeaveTeamDialog({ team, onLeave }: LeaveTeamDialogProps) {
                 want to leave <span className="font-semibold">{team.name}</span>?
               </DialogDescription>
               {error && (
-                <DialogDescription>{error}</DialogDescription>
+                <DialogDescription
+                  className="font-semibold text-red-500"
+                >{error}</DialogDescription>
               )}
               <DialogFooter>
                 <Button

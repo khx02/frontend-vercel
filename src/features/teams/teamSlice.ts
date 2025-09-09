@@ -1,6 +1,7 @@
 import { createAsyncThunk, createSlice, type PayloadAction } from "@reduxjs/toolkit";
 import { type TeamModel, type UserTeamsState } from "@/types/team";
 import { teamApi } from "@/api/team";
+import { extractErrorMessage } from "@/utils/errorHandling";
 
 const getSelectedTeamFromStorage = (): TeamModel | null => {
   if (typeof window === 'undefined') return null;
@@ -25,10 +26,18 @@ const saveSelectedTeamToStorage = (team: TeamModel | null) => {
   }
 }
 
-export const removeTeam = createAsyncThunk('teams/removeTeam', async (team_id: string) => {
-  await teamApi.leave({ team_id: team_id });
-  return team_id;
-});
+export const removeTeam = createAsyncThunk(
+  'teams/removeTeam',
+  async (team_id: string, { rejectWithValue }) => {
+    try {
+      await teamApi.leave({ team_id: team_id });
+      return team_id;
+    } catch (error) {
+      const errMsg = extractErrorMessage(error);
+      return rejectWithValue(errMsg);
+    }
+  }
+);
 
 const initialState: UserTeamsState = {
   teams: [],
@@ -105,6 +114,9 @@ const teamsSlice = createSlice({
           state.selectedTeam = newSelectedTeam;
           saveSelectedTeamToStorage(newSelectedTeam);
         }
+      })
+      .addCase(removeTeam.rejected, (_, action) => {
+        console.error("Failed to remove team:", action.payload);
       });
   },
 });
