@@ -301,11 +301,11 @@ export default function Projects() {
 
   const handleDeleteItem = async (itemId: string) => {
     if (!project) return;
-    
+
     try {
       // Call backend API to delete the todo item
       await projectsApi.deleteTodo(project.id, itemId);
-      
+
       // Update UI state after successful backend deletion
       setFeatures((prevFeatures) =>
         prevFeatures.filter((feature) => feature.id !== itemId)
@@ -344,18 +344,18 @@ export default function Projects() {
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   Select Project
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
                   <Select
                     value={selectedProjectId || ""}
                     onValueChange={handleProjectChange}
                   >
-                    <SelectTrigger className="flex-initial px-2 space-x-2">
+                    <SelectTrigger className="flex-initial py-5">
                       <SelectValue placeholder="Create a Project" />
                     </SelectTrigger>
                     <SelectContent>
                       {availableProjects.map((proj) => (
                         <SelectItem key={proj.id} value={proj.id}>
-                          <div className="flex items-center gap-2">
+                          <div className="grid grid-rows-2">
                             <div className="font-medium">{proj.name}</div>
                             {proj.description && (
                               <div className="text-xs text-muted-foreground">
