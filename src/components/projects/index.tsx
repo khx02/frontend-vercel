@@ -42,6 +42,7 @@ export type KanbanItemProps = {
   id: string;
   name: string;
   column: string;
+  description?: string;
 } & Record<string, unknown>;
 
 type KanbanColumnProps = {

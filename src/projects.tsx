@@ -104,6 +104,7 @@ export default function Projects() {
           (item: ToDoItem) => ({
             id: item.id,
             name: item.name,
+            description: item.description,
             startAt: new Date(),
             endAt: new Date(),
             column: item.status_id,
@@ -344,7 +345,7 @@ export default function Projects() {
                 <div className="text-sm font-medium text-muted-foreground mb-2">
                   Select Project
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-2">
                   <Select
                     value={selectedProjectId || ""}
                     onValueChange={handleProjectChange}
@@ -372,7 +373,7 @@ export default function Projects() {
                     onOpenChange={setIsCreateDialogOpen}
                   >
                     <DialogTrigger asChild>
-                      <Button size="sm" variant="outline" className="px-3">
+                      <Button size="sm" variant="outline" className="py-5 px-4">
                         +
                       </Button>
                     </DialogTrigger>

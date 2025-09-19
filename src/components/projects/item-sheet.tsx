@@ -66,6 +66,7 @@ export function KanbanItemSheet({
   const [editingField, setEditingField] = useState<string | null>(null);
   const [editValues, setEditValues] = useState<{
     name?: string;
+    description?: string;
     column?: string;
     startAt?: string;
     endAt?: string;
@@ -228,6 +229,51 @@ export function KanbanItemSheet({
                       onClick={() => startEdit("owner", item.owner)}
                     >
                       <ItemSheetAvatar owner={item.owner} />
+                    </EditableField>
+                  )}
+                </div>
+              </div>
+
+              {/* Task Description Section */}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 text-base font-medium text-foreground">
+                  <span>Description</span>
+                </div>
+                <div className="pl-0">
+                  {editingField === "description" ? (
+                    <textarea
+                      value={editValues.description || ""}
+                      onChange={(e) =>
+                        setEditValues({
+                          ...editValues,
+                          description: e.target.value,
+                        })
+                      }
+                      placeholder="Enter task description..."
+                      className="w-full min-h-[120px] p-3 text-sm border border-input rounded-md bg-background resize-none focus:outline-none focus:ring-2 focus:ring-ring focus:border-transparent"
+                      autoFocus
+                      onBlur={() => saveEdit("description")}
+                      onKeyDown={(e) => {
+                        if (e.key === "Escape") cancelEdit();
+                      }}
+                    />
+                  ) : (
+                    <EditableField
+                      canEdit={!!onUpdate}
+                      onClick={() =>
+                        startEdit("description", item?.description || "")
+                      }
+                      className="cursor-pointer hover:bg-muted/70 hover:shadow-sm rounded-lg p-3 transition-all duration-200 border-2 border-transparent hover:border-muted-foreground/20 min-h-[80px] block"
+                    >
+                      {item?.description ? (
+                        <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                          {item.description}
+                        </div>
+                      ) : (
+                        <span className="text-sm text-muted-foreground italic">
+                          No description - click to add
+                        </span>
+                      )}
                     </EditableField>
                   )}
                 </div>
