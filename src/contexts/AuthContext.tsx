@@ -68,18 +68,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const register = async (
     email: string,
     password: string,
-    _passwordConfirmation: string
+    _passwordConfirmation: string,
+    first_name: string,
+    last_name: string
   ): Promise<void> => {
     setIsLoading(true);
     try {
-      await authApi.register({ email, password });
-
+      await authApi.register({ email, password, first_name, last_name });
       // NOTE: LOGIN WILL NOW HAPPEN AFTER EMAIL VERFICATION
-      // Manually perform login without calling the login function to avoid loading state conflicts
-      // const form = _form_helper(email, password);
-      // await authApi.login(form);
-
-      // await fetchMe();
     } catch (error) {
       setUser(null);
       throw error;
