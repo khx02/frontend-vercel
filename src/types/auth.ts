@@ -11,7 +11,7 @@ export interface AuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
-  register: (email: string, password: string, passwordConfirm: string) => Promise<void>;
+  register: (email: string, password: string, passwordConfirm: string, name: string, lastname: string) => Promise<void>;
   verifyEmailAndLogin: (email: string, password: string, code: string) => Promise<void>;
 }
 
@@ -31,6 +31,9 @@ export interface AuthResponse {
 export interface RegisterPayload {
   email: string;
   password: string;
+  first_name: string;
+  last_name: string;
+  send_email?: boolean;
 }
 
 export interface LoginPayload {

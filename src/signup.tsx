@@ -12,6 +12,8 @@ import { useDispatch } from "react-redux";
 import { type AppDispatch } from "./lib/store";
 
 const signUpFormSchema = z.object({
+  first_name: z.string().min(1, "First name is required"),
+  last_name: z.string().min(1, "Last name is required"),
   email: z.string().email("Please enter a valid email address"),
   password: z.string().min(6, "Password must be at least 6 characters"),
   passwordConfirmation: z.string(),
@@ -32,19 +34,14 @@ export function SignUp() {
 
   async function onSubmit(values: z.infer<typeof signUpFormSchema>) {
     setError(null);
-
     try {
-      await register(values.email, values.password, values.passwordConfirmation);
-      // await dispatch(fetchTeams()).unwrap();
-      // const teams = await dispatch(fetchTeams()).unwrap();
-
-      // TODO: THIS WILL MIGRATE TO OTP PAGE
-      // If user has teams, navigate to dashboard, otherwise prompt user to
-      // create/join a team.
-      // teams.length === 0 ? navigate('/teams/join') : navigate('/dashboard');
-
-      // navigate(`/email-verify/${values.email}`);
-      // Passes 
+      await register(
+        values.email,
+        values.password,
+        values.passwordConfirmation,
+        values.first_name,
+        values.last_name
+      );
       navigate("/email-verify", {
         state: {
           email: values.email,
@@ -80,6 +77,30 @@ export function SignUp() {
             <form onSubmit={form.handleSubmit(onSubmit)} className="flex flex-col gap-3">
               <FormField
                 control={form.control}
+                name="first_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>First Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="John" type="text" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="last_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Last Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Doe" type="text" {...field} />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
                 name="email"
                 render={({ field }) => (
                   <FormItem>
@@ -90,7 +111,6 @@ export function SignUp() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="password"
@@ -103,13 +123,12 @@ export function SignUp() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="passwordConfirmation"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Password</FormLabel>
+                    <FormLabel>Confirm Password</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>
