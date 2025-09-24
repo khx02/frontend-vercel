@@ -6,6 +6,10 @@ export const teamApi = {
     await apiClient.post(`/teams/join-team/${data.team_id}`, data);
   },
 
+  joinByShortId: async (shortId: string): Promise<void> => {
+    await apiClient.post(`/teams/join-team-by-short-id/${shortId}`);
+  },
+
   create: async (data: CreateTeamPayload): Promise<TeamModel> => {
     const response = await apiClient.post<TeamModel>(`/teams/create-team`, data);
     return response.data
@@ -18,5 +22,13 @@ export const teamApi = {
   getUserTeams: async (): Promise<TeamModel[]> => {
     const response = await apiClient.get<GetUserTeamsRes>(`/users/get-current-user-teams`);
     return response.data.teams;
+  },
+
+  promoteMember: async (teamId: string, memberId: string): Promise<void> => {
+    await apiClient.post(`/teams/promote-team-member/${teamId}`, { member_id: memberId });
+  },
+
+  kickMember: async (teamId: string, memberId: string): Promise<void> => {
+    await apiClient.post(`/teams/kick-team-member/${teamId}`, { member_id: memberId });
   }
 };
