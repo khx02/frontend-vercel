@@ -21,30 +21,41 @@ import {
 import { Input } from "@/components/ui/input";
 import type {
   Column,
-  User,
+  UserDetails,
   Feature,
   Project,
   ToDoItem,
-  Team,
+  TodoStatus,
 } from "@/types/projects";
 import { CreateTask } from "./components/projects/create-task";
 import { KanbanItemSheet } from "@/components/projects/item-sheet";
 import type { KanbanItemProps } from "@/components/projects";
 import { projectsApi } from "@/api/projects";
 import { ProgressLoading } from "@/components/ProgressLoading";
+import { useSelector, useDispatch } from "react-redux";
+import { type AppDispatch, type RootState } from "./lib/store";
+import { fetchTeams } from "./features/teams/teamSlice";
+import { authApi } from "@/api/auth";
 
 export default function Projects() {
-  const [teams, setTeams] = useState<Team[]>([]);
+  const { teams, isFetchingTeams, selectedTeam } = useSelector(
+    (state: RootState) => state.teams
+  );
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [project, setProject] = useState<Project | null>(null);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [columns, setColumns] = useState<Column[]>([]);
-  const [users, setUsers] = useState<User[]>([]);
+  const [users, setUsers] = useState<UserDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStage, setLoadingStage] = useState(0);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectDescription, setNewProjectDescription] = useState("");
+  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
+  const [selectedItem, setSelectedItem] = useState<KanbanItemProps | null>(
+    null
+  );
+  const [view, setView] = useState<"kanban" | "list">("kanban");
 
   const loadingStages = [
     "Fetching user teams...",
@@ -54,38 +65,121 @@ export default function Projects() {
     "Fetching todo items...",
     "Preparing workspace...",
   ];
-  const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
-  const [selectedItem, setSelectedItem] = useState<KanbanItemProps | null>(
-    null
-  );
-  const [view, setView] = useState<"kanban" | "list">("kanban");
 
-  // Function to load specific project data
+  const DUMMY_USER: UserDetails = {
+    id: "no-user-found",
+    first_name: "No",
+    last_name: "User",
+    email: "",
+  };
+
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(fetchTeams());
+  }, []); // run on mount to prevent redux team stale data
+
+  useEffect(() => {
+    (async () => {
+      if (!teams.length) return;
+
+      try {
+        const teamMembers = teams.flatMap((team) => team.member_ids);
+        const uniqueMemberIds = [...new Set(teamMembers)];
+
+        const userPromises = uniqueMemberIds.map((id) =>
+          authApi.getUserById(id)
+        );
+        const userResponses = await Promise.all(userPromises);
+
+        const validUsers = userResponses.map((u) => u.user);
+
+        setUsers(validUsers);
+      } catch (err) {
+        console.log("Failed to fetch users:", err);
+      }
+    })();
+  }, [project, teams]);
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      try {
+        setLoading(true);
+        setLoadingStage(1);
+
+        if (teams.length === 0) {
+          throw new Error("No teams found for current user");
+        }
+
+        if (selectedTeam == null) {
+          throw new Error("No team selected");
+        }
+
+        setLoadingStage(2);
+        const projectPromises = selectedTeam.project_ids.map(
+          async (projectId) => {
+            return await projectsApi.getProject(projectId);
+          }
+        );
+
+        const projectResponses = await Promise.all(projectPromises);
+        const validProjects = projectResponses
+          .filter((response) => response && response.project)
+          .map((response) => response!.project);
+        setAvailableProjects(validProjects);
+
+        if (validProjects.length <= 0) {
+          throw new Error("No valid projects could be loaded");
+        }
+        const firstProjectId = validProjects[0].id;
+        setSelectedProjectId(firstProjectId);
+        await loadProjectData(firstProjectId);
+      } catch (err) {
+        console.log(
+          err instanceof Error ? err.message : "Failed to fetch project data"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (!isFetchingTeams && teams.length > 0) {
+      fetchProjects();
+    }
+  }, [isFetchingTeams, teams, selectedTeam]);
+
+  useEffect(() => {
+    if (selectedTeam && selectedTeam.project_ids.length === 0) {
+      setIsCreateDialogOpen(true);
+    }
+  }, [selectedTeam]);
+
   const loadProjectData = async (projectId: string) => {
     try {
-      setLoadingStage(3); // Loading project details
+      setLoadingStage(3);
 
-      // Fetch project details and todo items in parallel
       const [projectResponse, todoItemsResponse] = await Promise.all([
         projectsApi.getProject(projectId),
         (async () => {
-          setLoadingStage(4); // Fetching todo items
+          setLoadingStage(4);
           return await projectsApi.getTodoItems(projectId);
         })(),
       ]);
 
-      setLoadingStage(5); // Preparing workspace
+      setLoadingStage(5);
 
       if (projectResponse.project) {
         setProject(projectResponse.project);
 
-        // Use todo_statuses array to create columns
+        // todo : make status columns customisable
         const statusColumns: Column[] =
-          projectResponse.project.todo_statuses.map((status, index) => ({
-            id: status.id,
-            name: status.name,
-            color: ["#6B7280", "#F59E0B", "#10B981"][index % 3],
-          }));
+          projectResponse.project.todo_statuses.map(
+            (status: TodoStatus, index: number) => ({
+              id: status.id,
+              name: status.name,
+              color: ["#6B7280", "#F59E0B", "#10B981"][index % 3],
+            })
+          );
 
         setColumns(
           statusColumns.length > 0
@@ -99,7 +193,6 @@ export default function Projects() {
       }
 
       if (todoItemsResponse.todos) {
-        // Convert ToDoItems to Features format
         const convertedFeatures: Feature[] = todoItemsResponse.todos.map(
           (item: ToDoItem) => ({
             id: item.id,
@@ -108,11 +201,7 @@ export default function Projects() {
             startAt: new Date(),
             endAt: new Date(),
             column: item.status_id,
-            owner: {
-              id: item.owner_id,
-              name: item.owner_id,
-              image: "",
-            },
+            owner: users.find((u) => u.id === item.assignee_id) || DUMMY_USER,
           })
         );
         setFeatures(convertedFeatures);
@@ -124,100 +213,6 @@ export default function Projects() {
       throw err;
     }
   };
-  // Fetch users whenever project or teams change
-  useEffect(() => {
-    const fetchUsers = async () => {
-      let teamId = null;
-      if (project && teams.length > 0) {
-        const owningTeam = teams.find((team) =>
-          team.project_ids.includes(project.id)
-        );
-        teamId = owningTeam?.id || teams[0].id;
-      } else if (teams.length > 0) {
-        teamId = teams[0].id;
-      }
-      let realUsers: User[] = [];
-      if (teamId) {
-        try {
-          const teamResponse = await projectsApi.getTeam(teamId);
-          realUsers = teamResponse.team.member_ids.map((id) => ({
-            id,
-            name: id,
-            image: "",
-          }));
-        } catch (err) {
-          // silently fail
-        }
-      }
-      setUsers(realUsers);
-    };
-    fetchUsers();
-  }, [project, teams]);
-
-  useEffect(() => {
-    const fetchTeamsAndProjects = async () => {
-      try {
-        setLoading(true);
-        setLoadingStage(0); // Fetching user teams
-
-        // Get current user teams to find project IDs
-        const teamsResponse = await projectsApi.getCurrentUserTeams();
-        if (!teamsResponse || !teamsResponse.teams) {
-          throw new Error("Invalid response from teams API");
-        }
-        setTeams(teamsResponse.teams);
-
-        setLoadingStage(1); // Loading available projects
-
-        if (teamsResponse.teams.length === 0) {
-          throw new Error("No teams found for current user");
-        }
-
-        setLoadingStage(2); // Setting up project data
-
-        // Collect all project IDs from all teams
-        const allProjectIds = teamsResponse.teams.flatMap(
-          (team) => team.project_ids
-        );
-        if (allProjectIds.length === 0) {
-          throw new Error("No projects found in user teams");
-        }
-
-        // Fetch all projects to populate the selector
-        const projectPromises = allProjectIds.map(async (projectId) => {
-          try {
-            const response = await projectsApi.getProject(projectId);
-            return response;
-          } catch (err) {
-            return null;
-          }
-        });
-
-        const projectResponses = await Promise.all(projectPromises);
-        const validProjects = projectResponses
-          .filter((response) => response && response.project)
-          .map((response) => response!.project);
-        setAvailableProjects(validProjects);
-
-        // Auto-select the first available project
-        if (validProjects.length > 0) {
-          const firstProjectId = validProjects[0].id;
-          setSelectedProjectId(firstProjectId);
-          await loadProjectData(firstProjectId);
-        } else {
-          throw new Error("No valid projects could be loaded");
-        }
-      } catch (err) {
-        console.log(
-          err instanceof Error ? err.message : "Failed to fetch project data"
-        );
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchTeamsAndProjects();
-  }, []);
 
   // Handle project selection change
   const handleProjectChange = async (projectId: string) => {
@@ -237,7 +232,7 @@ export default function Projects() {
 
   // Handle creating a new project
   const handleCreateProject = async () => {
-    if (teams.length === 0) {
+    if (!selectedTeam && teams.length === 0) {
       console.log("No team available to create project");
       return;
     }
@@ -250,43 +245,17 @@ export default function Projects() {
       setLoading(true);
       setLoadingStage(1); // Creating project
 
-      const teamId = teams[0].id; // Use the first team
+      const teamId = selectedTeam?.id || "";
       const response = await projectsApi.createProject(
         teamId,
         newProjectName.trim(),
-        newProjectDescription.trim() || undefined
+        newProjectDescription.trim()
       );
 
       if (response.project) {
-        // Refresh the available projects list
-        const updatedTeamsResponse = await projectsApi.getCurrentUserTeams();
-        if (updatedTeamsResponse.teams.length > 0) {
-          const allProjectIds = updatedTeamsResponse.teams.flatMap(
-            (team) => team.project_ids
-          );
-
-          const projectPromises = allProjectIds.map(async (projectId) => {
-            try {
-              const response = await projectsApi.getProject(projectId);
-              return response;
-            } catch (err) {
-              return null;
-            }
-          });
-
-          const projectResponses = await Promise.all(projectPromises);
-          const validProjects = projectResponses
-            .filter((response) => response && response.project)
-            .map((response) => response!.project);
-
-          setAvailableProjects(validProjects);
-
-          // Auto-select the newly created project
-          setSelectedProjectId(response.project.id);
-          await loadProjectData(response.project.id);
-        }
-
-        // Reset form and close dialog
+        setAvailableProjects([...availableProjects, response.project]);
+        setSelectedProjectId(response.project.id);
+        await loadProjectData(response.project.id);
         setNewProjectName("");
         setNewProjectDescription("");
         setIsCreateDialogOpen(false);
@@ -322,6 +291,10 @@ export default function Projects() {
     itemId: string,
     updates: Partial<KanbanItemProps>
   ) => {
+    const currentFeature = features.find((f) => f.id === itemId);
+    if (!currentFeature) return;
+
+    // Update frontend state
     setFeatures((prevFeatures) =>
       prevFeatures.map((feature) =>
         feature.id === itemId ? { ...feature, ...updates } : feature
@@ -330,6 +303,20 @@ export default function Projects() {
     // Update selectedItem if it's the one being edited
     if (selectedItem?.id === itemId) {
       setSelectedItem({ ...selectedItem, ...updates });
+    }
+
+    // Update backend
+    if (project) {
+      const apiData = {
+        id: itemId,
+        name: updates.name ?? currentFeature.name,
+        description: updates.description ?? currentFeature.description,
+        status_id: updates.column ?? currentFeature.column,
+        assignee_id: (updates as any).owner?.id ?? currentFeature.owner.id,
+      };
+      projectsApi.updateTodo(project.id, apiData).catch((err) => {
+        console.error("Failed to update todo:", err);
+      });
     }
   };
 
@@ -342,15 +329,19 @@ export default function Projects() {
           <div className="flex items-start justify-between mb-4 py-2">
             <div className="flex-1">
               <div className="space-y-2">
-                <div className="text-sm font-medium text-muted-foreground mb-2">
-                  Select Project
+                <div className="text-lg font-medium mb-2">Project</div>
+                <div>
+                  <p className="text-xs text-muted-foreground">
+                    Team: {selectedTeam?.name} • {availableProjects.length}{" "}
+                    project(s)
+                  </p>
                 </div>
                 <div className="flex items-center gap-2">
                   <Select
                     value={selectedProjectId || ""}
                     onValueChange={handleProjectChange}
                   >
-                    <SelectTrigger className="flex-initial py-5">
+                    <SelectTrigger className="flex-initial py-6">
                       <SelectValue placeholder="Create a Project" />
                     </SelectTrigger>
                     <SelectContent>
@@ -359,7 +350,7 @@ export default function Projects() {
                           <div className="grid grid-rows-2">
                             <div className="font-medium">{proj.name}</div>
                             {proj.description && (
-                              <div className="text-xs text-muted-foreground">
+                              <div className="text-left text-xs text-muted-foreground">
                                 {proj.description}
                               </div>
                             )}
@@ -408,7 +399,7 @@ export default function Projects() {
                               setNewProjectDescription(e.target.value)
                             }
                             className="col-span-3"
-                            placeholder="Enter project description (optional)"
+                            placeholder="Enter project description"
                           />
                         </div>
                       </div>
@@ -425,7 +416,10 @@ export default function Projects() {
                         </Button>
                         <Button
                           onClick={handleCreateProject}
-                          disabled={!newProjectName.trim()}
+                          disabled={
+                            !newProjectName.trim() ||
+                            !newProjectDescription.trim()
+                          }
                         >
                           Create Project
                         </Button>
@@ -433,12 +427,6 @@ export default function Projects() {
                     </DialogContent>
                   </Dialog>
                 </div>
-                {teams.length > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Team: {teams[0].name} • {availableProjects.length}{" "}
-                    project(s)
-                  </p>
-                )}
               </div>
             </div>
             <div className="flex flex-col items-end space-y-2">

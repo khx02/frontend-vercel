@@ -1,16 +1,5 @@
 import { apiClient } from "./client";
-import type { Project, ToDoItem, UserTeamsResponse } from "@/types/projects";
-
-export interface TeamResponse {
-  team: {
-    id: string;
-    name: string;
-    member_ids: string[];
-    exec_member_ids: string[];
-    project_ids: string[];
-    event_ids: string[];
-  };
-}
+import type { Project, ToDoItem } from "@/types/projects";
 
 export interface ProjectResponse {
   project: Project;
@@ -21,32 +10,11 @@ export interface TodoItemsResponse {
 }
 
 export const projectsApi = {
-  // Get team details
-  async getTeam(teamId: string): Promise<TeamResponse> {
-    const response = await apiClient.get<TeamResponse>(
-      `/teams/get-team/${teamId}`
-    );
-    return response.data;
-  },
-  // Get current user teams
-  async getCurrentUserTeams(): Promise<UserTeamsResponse> {
-    const response = await apiClient.get<UserTeamsResponse>(
-      `/users/get-current-user-teams`
-    );
-    console.log("Raw teams API response:", response);
-    console.log("Teams API response data:", response.data);
-    return response.data;
-  },
-
-  // Get project details
   async getProject(projectId: string): Promise<ProjectResponse> {
-    console.log(`Making API call to /projects/get-project/${projectId}`);
     try {
       const response = await apiClient.get<ProjectResponse>(
         `/projects/get-project/${projectId}`
       );
-      console.log(`Project ${projectId} API response:`, response);
-      console.log(`Project ${projectId} response data:`, response.data);
       return response.data;
     } catch (error) {
       console.error(`Error fetching project ${projectId}:`, error);
@@ -54,7 +22,6 @@ export const projectsApi = {
     }
   },
 
-  // Get all todo items for a project
   async getTodoItems(projectId: string): Promise<TodoItemsResponse> {
     const response = await apiClient.get<TodoItemsResponse>(
       `/projects/get-todo-items/${projectId}`
@@ -62,7 +29,6 @@ export const projectsApi = {
     return response.data;
   },
 
-  // Add a new todo item
   async addTodo(projectId: string, todoData: Partial<ToDoItem>) {
     const response = await apiClient.post(
       `/projects/add-todo/${projectId}`,
@@ -71,7 +37,6 @@ export const projectsApi = {
     return response.data;
   },
 
-  // Update a todo item
   async updateTodo(
     projectId: string,
     todoData: {
@@ -79,7 +44,7 @@ export const projectsApi = {
       name: string;
       description: string;
       status_id: string;
-      owner_id: string;
+      assignee_id: string;
     }
   ) {
     const requestData = {
@@ -87,7 +52,7 @@ export const projectsApi = {
       name: todoData.name,
       description: todoData.description,
       status_id: todoData.status_id,
-      owner_id: todoData.owner_id,
+      assignee_id: todoData.assignee_id,
     };
 
     const response = await apiClient.post(
@@ -97,7 +62,6 @@ export const projectsApi = {
     return response.data;
   },
 
-  // Delete a todo item
   async deleteTodo(projectId: string, todoId: string) {
     const response = await apiClient.delete(
       `/projects/delete-todo/${projectId}`,
@@ -108,7 +72,6 @@ export const projectsApi = {
     return response.data;
   },
 
-  // Add a new todo status
   async addTodoStatus(
     projectId: string,
     statusData: { name: string; color?: string }
@@ -120,7 +83,6 @@ export const projectsApi = {
     return response.data;
   },
 
-  // Delete a todo status
   async deleteTodoStatus(projectId: string, statusId: string) {
     const response = await apiClient.delete(
       `/projects/delete-todo-status/${projectId}`,
@@ -131,7 +93,6 @@ export const projectsApi = {
     return response.data;
   },
 
-  // Create a new project
   async createProject(
     teamId: string,
     name: string,

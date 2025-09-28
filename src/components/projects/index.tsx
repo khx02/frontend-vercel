@@ -33,6 +33,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { MoreHorizontal } from "lucide-react";
+import type { UserDetails } from "@/types/projects";
 
 const t = tunnel();
 
@@ -43,6 +44,7 @@ export type KanbanItemProps = {
   name: string;
   column: string;
   description?: string;
+  owner: UserDetails;
 } & Record<string, unknown>;
 
 type KanbanColumnProps = {
