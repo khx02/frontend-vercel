@@ -7,7 +7,6 @@ import {
   type KanbanItemProps,
 } from "@/components/projects";
 import type { Column, Feature, Project } from "@/types/projects";
-import { formatDateRange } from "@/utils/dateFormat";
 import { KanbanAvatar } from "@/components/ui/user-avatar";
 import { useEffect, useRef } from "react";
 import { projectsApi } from "@/api/projects";
@@ -51,9 +50,9 @@ export function Kanban({
         .updateTodo(project.id, {
           id: movedFeature.id,
           name: movedFeature.name,
-          description: movedFeature.name, // Using name as description fallback
+          description: movedFeature.description,
           status_id: movedFeature.column,
-          owner_id: movedFeature.owner.id,
+          assignee_id: movedFeature.owner.id,
         })
         .catch((err) => {
           console.error("Failed to update todo status in backend:", err);
@@ -96,9 +95,10 @@ export function Kanban({
                 id={feature.id}
                 key={feature.id}
                 name={feature.name}
+                owner={feature.owner}
                 onClick={() => onSelect(feature)}
               >
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-2 ">
                   <div className="flex flex-col gap-1">
                     <p className="m-0 flex-1 font-medium text-sm">
                       {feature.name}
@@ -106,9 +106,9 @@ export function Kanban({
                   </div>
                   {feature.owner && <KanbanAvatar owner={feature.owner} />}
                 </div>
-                <p className="m-0 text-muted-foreground text-xs">
-                  {formatDateRange(feature.startAt, feature.endAt)}
-                </p>
+                <div className="text-muted-foreground text-xs w-70 line-clamp-1">
+                  {feature.description}
+                </div>
               </KanbanCard>
             )}
           </KanbanCards>

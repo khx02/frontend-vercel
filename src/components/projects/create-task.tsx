@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/select";
 import { useState } from "react";
 import { projectsApi } from "@/api/projects";
+import type { UserDetails } from "@/types/projects";
 
 export function CreateTask({
   project,
@@ -29,14 +30,14 @@ export function CreateTask({
 }: {
   project: { id: string } | null;
   statuses: { id: string; name: string }[];
-  users: { id: string; name: string }[];
+  users: UserDetails[];
   onCreated: () => void;
 }) {
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [statusId, setStatusId] = useState(statuses[0]?.id || "");
-  const [ownerId, setOwnerId] = useState(users[0]?.id || "");
+  const [assigneeId, setAssigneeId] = useState(users[0]?.id || "");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -50,13 +51,13 @@ export function CreateTask({
         name,
         description,
         status_id: statusId,
-        owner_id: ownerId,
+        assignee_id: assigneeId,
       });
       setOpen(false);
       setName("");
       setDescription("");
       setStatusId(statuses[0]?.id || "");
-      setOwnerId(users[0]?.id || "");
+      setAssigneeId(users[0]?.id || "");
       onCreated();
     } catch (err: any) {
       setError(err?.message || "Failed to create task");
@@ -123,8 +124,8 @@ export function CreateTask({
             <div className="grid gap-3">
               <Label htmlFor="assignee-1">Assign to</Label>
               <Select
-                value={ownerId}
-                onValueChange={setOwnerId}
+                value={assigneeId}
+                onValueChange={setAssigneeId}
                 name="assignee"
               >
                 <SelectTrigger id="assignee-1">
@@ -133,7 +134,7 @@ export function CreateTask({
                 <SelectContent>
                   {users.map((u) => (
                     <SelectItem key={u.id} value={u.id}>
-                      {u.name}
+                      {u.first_name} {u.last_name}
                     </SelectItem>
                   ))}
                 </SelectContent>
