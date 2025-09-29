@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { Project, ToDoItem } from "@/types/projects";
+import type { addTodoStatus, Project, ToDoItem } from "@/types/projects";
 import type { TeamModel } from "@/types/team";
 
 export interface ProjectResponse {
@@ -38,6 +38,16 @@ export const projectsApi = {
     return response.data;
   },
 
+  async addTodoStatus(project_id: string, todoStatus: addTodoStatus) {
+    console.log("todostatus", todoStatus);
+    const response = await apiClient.post(
+      `/projects/add-todo-status/${project_id}`,
+      todoStatus
+    );
+    console.log(response);
+    return response.data;
+  },
+
   async updateTodo(
     projectId: string,
     todoData: {
@@ -69,17 +79,6 @@ export const projectsApi = {
       {
         data: { todo_id: todoId },
       }
-    );
-    return response.data;
-  },
-
-  async addTodoStatus(
-    projectId: string,
-    statusData: { name: string; color?: string }
-  ) {
-    const response = await apiClient.post(
-      `/projects/add-todo-status/${projectId}`,
-      statusData
     );
     return response.data;
   },

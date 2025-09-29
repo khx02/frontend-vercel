@@ -1,11 +1,12 @@
 import { useState, useEffect, useRef } from "react";
-import type {
-  Column,
-  UserDetails,
-  Feature,
-  Project,
-  ToDoItem,
-  TodoStatus,
+import {
+  type Column,
+  type UserDetails,
+  type Feature,
+  type Project,
+  type ToDoItem,
+  type TodoStatus,
+  type addTodoStatus,
 } from "@/types/projects";
 import { projectsApi } from "@/api/projects";
 import { authApi } from "@/api/auth";
@@ -30,12 +31,26 @@ export function useProjectData({
   const [project, setProject] = useState<Project | null>(null);
   const [features, setFeatures] = useState<Feature[]>([]);
   const [columns, setColumns] = useState<Column[]>([]);
+  const [newColumn, setNewColumn] = useState<addTodoStatus>({
+    name: "",
+    color: "",
+  });
+  const [isAddingColumn, setIsAddingColumn] = useState(false);
   const [users, setUsers] = useState<UserDetails[]>([]);
   const [loading, setLoading] = useState(true);
   const [loadingStage, setLoadingStage] = useState(0);
   const [availableProjects, setAvailableProjects] = useState<Project[]>([]);
 
   const hasFetchedTeamsRef = useRef(false);
+
+  // Helper to ensure color values are valid hex (prepend '#' if missing)
+  const ensureHexColor = (c: string | undefined | null) => {
+    const defaultColor = "#9ca3af"; // gray-400 as fallback
+    if (!c) return defaultColor;
+    const val = c.trim();
+    if (!val) return defaultColor;
+    return val.startsWith("#") ? val : `#${val}`;
+  };
 
   // run on mount to prevent redux team stale data
   useEffect(() => {
@@ -89,23 +104,16 @@ export function useProjectData({
         setProject(projectResponse.project);
 
         const statusColumns: Column[] =
-          projectResponse.project.todo_statuses.map(
-            (status: TodoStatus, index: number) => ({
-              id: status.id,
-              name: status.name,
-              color: ["#6B7280", "#F59E0B", "#10B981"][index % 3],
-            })
-          );
+          projectResponse.project.todo_statuses.map((status: TodoStatus) => ({
+            id: status.id,
+            name: status.name,
+            color: ensureHexColor(status.color),
+          }));
 
-        setColumns(
-          statusColumns.length > 0
-            ? statusColumns
-            : [
-                { id: "1", name: "To Do", color: "#6B7280" },
-                { id: "2", name: "In Progress", color: "#F59E0B" },
-                { id: "3", name: "Done", color: "#10B981" },
-              ]
-        );
+        setColumns(statusColumns);
+        // Debug: log columns to inspect colors
+        // eslint-disable-next-line no-console
+        console.log("loaded columns:", statusColumns);
       }
 
       if (todoItemsResponse.todos) {
@@ -338,6 +346,45 @@ export function useProjectData({
     }
   };
 
+  const addColumn = async () => {
+    if (!project) {
+      toast.error("No project selected", { id: "no-project-selected" });
+      return;
+    }
+
+    if (!newColumn.name.trim()) {
+      toast.error("Column title cannot be empty", { id: "empty-column-name" });
+      return;
+    }
+
+    try {
+      setLoading(true);
+      // Call API to add the todo status. Normalize the color first.
+      const payload: addTodoStatus = {
+        name: newColumn.name.trim(),
+        color: ensureHexColor(newColumn.color),
+      };
+      await projectsApi.addTodoStatus(project.id, payload);
+      await loadProjectData(project.id);
+
+      // reset state
+      setNewColumn({ name: "", color: "" });
+      setIsAddingColumn(false);
+      try {
+        await dispatch(fetchTeams()).unwrap();
+      } catch (e) {
+        console.log("Failed to refresh teams after add status", e);
+      }
+
+      toast.success("Column added");
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to add column");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return {
     loading,
     loadingStage,
@@ -354,5 +401,10 @@ export function useProjectData({
     handleDeleteProject,
     handleDeleteItem,
     handleUpdateItem,
+    newColumn,
+    setNewColumn,
+    isAddingColumn,
+    setIsAddingColumn,
+    addColumn,
   } as const;
 }

@@ -69,7 +69,7 @@ export function Layout() {
       <AppSidebar />
       <PageHeaderProvider>
         <RouteHeaderSetter />
-        <main className="m-4 w-full">
+        <main className="m-4 w-full min-w-0">
           <SiteHeader />
 
           <div className="mt-2">

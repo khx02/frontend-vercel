@@ -17,6 +17,7 @@ interface KanbanProps {
   project: Project | null;
   onFeaturesChange: (features: Feature[]) => void;
   onSelect: React.Dispatch<React.SetStateAction<KanbanItemProps | null>>;
+  extraColumn?: React.ReactNode;
 }
 
 export function Kanban({
@@ -25,6 +26,7 @@ export function Kanban({
   project,
   onFeaturesChange,
   onSelect,
+  extraColumn,
 }: KanbanProps) {
   const prevFeaturesRef = useRef<Feature[]>([]);
 
@@ -76,6 +78,7 @@ export function Kanban({
       columns={columns}
       data={features}
       onDataChange={handleKanbanChange}
+      extraColumn={extraColumn}
     >
       {(column) => (
         <KanbanBoard id={column.id} key={column.id}>
