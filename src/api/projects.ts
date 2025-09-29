@@ -1,5 +1,6 @@
 import { apiClient } from "./client";
 import type { Project, ToDoItem } from "@/types/projects";
+import type { TeamModel } from "@/types/team";
 
 export interface ProjectResponse {
   project: Project;
@@ -106,6 +107,23 @@ export const projectsApi = {
       }
     );
     return response.data;
+  },
+
+  async getTeam(teamId: string): Promise<{ team: TeamModel }> {
+    try {
+      const response = await apiClient.get(`/teams/get-team/${teamId}`);
+      return response.data as { team: TeamModel };
+    } catch (error) {
+      console.error(`Error fetching team ${teamId}:`, error);
+      throw error;
+    }
+  },
+
+  async deleteProject(teamId: string, projectId: string): Promise<void> {
+    // Endpoint documented as DELETE /teams/delete-project/{team_id} with body { project_id }
+    await apiClient.delete(`/teams/delete-project/${teamId}`, {
+      data: { project_id: projectId },
+    });
   },
 
   // Budget: increase available budget
