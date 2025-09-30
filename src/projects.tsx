@@ -71,6 +71,8 @@ export default function Projects() {
     addColumn,
   } = useProjectData({ dispatch, teams, isFetchingTeams, selectedTeam });
 
+  // Column updates will be received via the Kanban `onColumnUpdated` prop.
+
   const handleProjectChange = async (projectId: string) => {
     try {
       setSelectedProjectId(projectId);
@@ -251,6 +253,9 @@ export default function Projects() {
               project={project}
               onFeaturesChange={setFeatures}
               onSelect={setSelectedItem}
+              onColumnUpdated={() => {
+                if (selectedProjectId) void loadProjectData(selectedProjectId);
+              }}
               extraColumn={
                 <div
                   onClick={() => setIsAddingColumn(true)}
