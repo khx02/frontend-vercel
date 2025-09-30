@@ -99,12 +99,15 @@ class ApiClient {
           switch (status) {
             case 400:
               errorMessage =
-                data.message || "Invalid input. Please check your data.";
-              if (data.errors) {
+                (data && (data.detail || data.message)) ||
+                "Invalid input. Please check your data.";
+
+              if (data && data.errors) {
                 errorMessage = data.errors
                   .map((err: any) => `${err.field}: ${err.message}`)
                   .join("\n");
               }
+
               break;
             case 403:
               errorMessage =
