@@ -4,7 +4,16 @@ import { ListView } from "./components/projects/list-view";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from "@/components/ui/dialog";
 import { CreateTask } from "./components/projects/create-task";
 import { KanbanItemSheet } from "@/components/projects/item-sheet";
 import type { KanbanItemProps } from "@/components/projects";
@@ -55,7 +64,14 @@ export default function Projects() {
     handleDeleteProject,
     handleDeleteItem,
     handleUpdateItem,
+    newColumn,
+    setNewColumn,
+    isAddingColumn,
+    setIsAddingColumn,
+    addColumn,
   } = useProjectData({ dispatch, teams, isFetchingTeams, selectedTeam });
+
+  // Column updates will be received via the Kanban `onColumnUpdated` prop.
 
   const handleProjectChange = async (projectId: string) => {
     try {
@@ -75,7 +91,7 @@ export default function Projects() {
         <ProgressLoading stages={loadingStages} currentStage={loadingStage} />
       ) : (
         <>
-          <div className="flex items-start justify-between py-1 mb-4">
+          <div className="flex items-start justify-between py-1 mb-4 z-10 relative">
             <div className="flex-1">
               <div className="space-y-2">
                 <div>
@@ -90,6 +106,7 @@ export default function Projects() {
                     selectedProjectId={selectedProjectId}
                     handleProjectChange={handleProjectChange}
                   />
+                  {/* Add Column button removed; use the Kanban end-card instead */}
                   <Dialog
                     open={isCreateDialogOpen}
                     onOpenChange={setIsCreateDialogOpen}
@@ -153,6 +170,82 @@ export default function Projects() {
             </div>
           </div>
 
+          {/* Modal dialog for Add Column (opened from Kanban's extraColumn) */}
+          <Dialog open={isAddingColumn} onOpenChange={setIsAddingColumn}>
+            <DialogContent className="sm:max-w-[425px]">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  addColumn();
+                }}
+              >
+                <DialogHeader>
+                  <DialogTitle>Add Column</DialogTitle>
+                  <DialogDescription className="mb-2">
+                    Enter a title and pick a colour for the new column.
+                  </DialogDescription>
+                </DialogHeader>
+
+                <div className="grid gap-4">
+                  <div className="grid gap-3">
+                    <Label htmlFor="column-title">Column Title</Label>
+                    <input
+                      id="column-title"
+                      value={newColumn.name}
+                      onChange={(e) =>
+                        setNewColumn({ ...newColumn, name: e.target.value })
+                      }
+                      placeholder="Enter column title"
+                      required
+                      className="w-full rounded border px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-200"
+                    />
+                  </div>
+                  <div className="grid gap-3">
+                    <Label className="text-sm">Column Colour Label</Label>
+                    <div className="flex gap-2 my-2">
+                      {[
+                        "#ef4444",
+                        "#f97316",
+                        "#f59e0b",
+                        "#10b981",
+                        "#06b6d4",
+                        "#3b82f6",
+                        "#6366f1",
+                        "#8b5cf6",
+                        "#ec4899",
+                      ].map((c) => (
+                        <button
+                          key={c}
+                          type="button"
+                          onClick={() =>
+                            setNewColumn({ ...newColumn, color: c })
+                          }
+                          className={
+                            "w-8 h-8 rounded-full border-2 " +
+                            (newColumn.color === c
+                              ? "ring-2 ring-offset-1"
+                              : "")
+                          }
+                          style={{ background: c }}
+                          aria-label={`select ${c}`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+
+                <DialogFooter>
+                  <DialogClose asChild>
+                    <Button variant="outline" type="button">
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                  <Button type="submit">Add Column</Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+
           {view === "kanban" ? (
             <Kanban
               columns={columns}
@@ -160,6 +253,19 @@ export default function Projects() {
               project={project}
               onFeaturesChange={setFeatures}
               onSelect={setSelectedItem}
+              onColumnUpdated={() => {
+                if (selectedProjectId) void loadProjectData(selectedProjectId);
+              }}
+              extraColumn={
+                <div
+                  onClick={() => setIsAddingColumn(true)}
+                  className="cursor-pointer rounded-md border-2 border-dashed border-muted-foreground/30 h-full p-3 flex items-start justify-center"
+                >
+                  <div className="text-sm text-muted-foreground">
+                    + Add Column
+                  </div>
+                </div>
+              }
             />
           ) : (
             <ListView
