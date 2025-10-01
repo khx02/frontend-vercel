@@ -1,6 +1,10 @@
 {
   "rewrites": [
     {
+      "source": "/api/auth/:path*",
+      "destination": "https://backend-render-test-5ptp.onrender.com/api/auth/:path*"
+    },
+    {
       "source": "/((?!assets|api|.*\\..*).*)",
       "destination": "/index.html"
     }
